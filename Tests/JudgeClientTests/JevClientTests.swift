@@ -131,11 +131,13 @@ final class JevClientTests: XCTestCase {
         let transport = StubTransport(TestJSON.response(["models": [["name": "jev-latest",
                                                                    "release_date": "2026-09-10"]]]))
         let client = JevClient(route: try RouteSet.typesafe().resolve(.judgment), transport: transport)
-        XCTAssertEqual(try await client.models(), ["jev-latest"])
+        let models = try await client.models()
+        XCTAssertEqual(models, ["jev-latest"])
 
         let transport2 = StubTransport(TestJSON.response(["data": [["id": "jev-preview"]]]))
         let client2 = JevClient(route: try RouteSet.typesafe().resolve(.judgment), transport: transport2)
-        XCTAssertEqual(try await client2.models(), ["jev-preview"])
+        let models2 = try await client2.models()
+        XCTAssertEqual(models2, ["jev-preview"])
     }
 
     func testProbeSucceedsAndReportsLatency() async throws {

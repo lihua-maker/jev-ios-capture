@@ -62,7 +62,7 @@ extension RouteSet {
 
 enum Answers {
     /// The shape the live API returns (verified in Phase 0 against jev-1.13.0).
-    static func scam(_ dangerScore: Double = 3.16, replyNow: Double = 0.1,
+    static func scam(dangerScore: Double = 3.16, replyNow: Double = 0.1,
                      verifyFirst: Double = 0.95, intentConfidence: Double = 1.0,
                      dangerConfidence: Double = 0.82,
                      intent: String = "scam") -> [String: Any] {

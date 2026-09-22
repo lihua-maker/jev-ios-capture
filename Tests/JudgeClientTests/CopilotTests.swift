@@ -82,21 +82,21 @@ final class CopilotTests: XCTestCase {
     func testHighRiskEscalatesWithTheLevelLabel() async throws {
         let transport = scripted(judgment: Answers.scam(dangerScore: 3.16))
         let run = try await copilot(transport).run(transcript: "x")
-        XCTAssertEqual(run.escalation, .highRisk(level: 3, label: "高度可疑=高度符合诈骗特征，切勿转账"))
+        XCTAssertEqual(run.escalation, Escalation.highRisk(level: 3, label: "高度可疑=高度符合诈骗特征，切勿转账"))
         XCTAssertEqual(run.judgment.dangerLabel, "高度可疑=高度符合诈骗特征，切勿转账")
     }
 
     func testVerificationEscalatesWhenTheModelSaysCheckTheIdentity() async throws {
         let transport = scripted(judgment: Answers.scam(dangerScore: 0.5, verifyFirst: 0.9))
         let run = try await copilot(transport).run(transcript: "x")
-        XCTAssertEqual(run.escalation, .verificationRequired)
+        XCTAssertEqual(run.escalation, Escalation.verificationRequired)
     }
 
     func testLowConfidenceEscalatesInsteadOfBeingActedOn() async throws {
         let transport = scripted(judgment: Answers.scam(dangerScore: 0.4, verifyFirst: 0.2,
                                                         intentConfidence: 0.4, dangerConfidence: 0.9))
         let run = try await copilot(transport).run(transcript: "x")
-        XCTAssertEqual(run.escalation, .lowConfidence(question: "intent", confidence: 0.4))
+        XCTAssertEqual(run.escalation, Escalation.lowConfidence(question: "intent", confidence: 0.4))
     }
 
     func testASettledBenignConversationEscalatesNothing() async throws {
@@ -113,7 +113,7 @@ final class CopilotTests: XCTestCase {
         policy.dangerAlert = 1.0
         let transport = scripted(judgment: Answers.scam(dangerScore: 1.2, verifyFirst: 0.0))
         let run = try await copilot(transport, policy: policy).run(transcript: "x")
-        XCTAssertEqual(run.escalation, .highRisk(level: 1, label: run.judgment.dangerLabel ?? ""))
+        XCTAssertEqual(run.escalation, Escalation.highRisk(level: 1, label: run.judgment.dangerLabel ?? ""))
     }
 
     // MARK: state
