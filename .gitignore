@@ -1,0 +1,4 @@
+vision_out/
+.build/
+*.xcodeproj
+.DS_Store
