@@ -107,12 +107,24 @@ final class KnowledgeStoreTests: XCTestCase {
         store.upsert(Note(title: "报销流程", body: "先审批后报销", tags: ["报销"]))
         store.upsert(Note(title: "常驻提醒", body: "注意保护个人信息", pinned: true))
 
-        let facts = store.facts(contactName: "李经理", transcript: "帮我垫一笔款，明天还你")
+        let facts = store.facts(contactName: "李经理", transcript: "帮我垫款，明天还你")
         XCTAssertTrue(facts.contains("对方身份：李经理"))
         XCTAssertTrue(facts.contains("关系：上级"))
         XCTAssertTrue(facts.contains("垫款规定"), "a note tagged with a word in the transcript must attach")
         XCTAssertTrue(facts.contains("常驻提醒"), "pinned notes always attach")
         XCTAssertFalse(facts.contains("报销流程"), "an unrelated tagged note must not attach")
+    }
+
+    /// Retrieval is literal substring matching, which is a real limitation rather than a hidden
+    /// surprise: a tag that the conversation only paraphrases does not match. Documented here so a
+    /// future improvement (let the judgment model select among candidate notes) has a starting
+    /// point instead of a mystery.
+    func testTagMatchingIsLiteralNotSemantic() {
+        let store = self.store()
+        store.upsert(Note(title: "垫款规定", body: "任何垫款都要走财务审批", tags: ["垫款"]))
+        let paraphrased = store.facts(contactName: nil, transcript: "能不能先帮我垫一笔款")
+        XCTAssertFalse(paraphrased.contains("垫款规定"),
+                       "if this ever starts passing, retrieval became semantic — update the docs")
     }
 
     func testFactsSurviveAReload() {

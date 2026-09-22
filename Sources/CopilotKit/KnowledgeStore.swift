@@ -99,6 +99,11 @@ public final class KnowledgeStore {
     /// The facts handed to the judgment: who is talking, plus the notes that this conversation
     /// actually touches (pinned ones always, tagged ones when their tag or title appears in the
     /// text). Ordering is stable so the same conversation always produces the same state.
+    ///
+    /// Matching is LITERAL substring, not semantic: a note tagged 垫款 does not attach to a
+    /// conversation that says 垫一笔款. That is a known limitation, covered by its own test. The
+    /// honest upgrade path is to retrieve candidates here and let the judgment model pick among
+    /// them (a noul per candidate), rather than growing an ever-more-clever matcher.
     public func facts(contactName: String?, transcript: String) -> String {
         var parts: [String] = []
 
