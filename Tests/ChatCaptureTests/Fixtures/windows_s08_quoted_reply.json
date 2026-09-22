@@ -1,0 +1,91 @@
+{
+ "id": "s08_quoted_reply",
+ "engine": "windows",
+ "width": 1170,
+ "height": 2532,
+ "lines": [
+  {
+   "text": "21：47",
+   "x": 68,
+   "y": 50,
+   "w": 112,
+   "h": 34
+  },
+  {
+   "text": "5G．．．86％",
+   "x": 851,
+   "y": 51,
+   "w": 251,
+   "h": 33
+  },
+  {
+   "text": "李经理",
+   "x": 509,
+   "y": 174,
+   "w": 152,
+   "h": 50
+  },
+  {
+   "text": "你能不能今天就把方案发我",
+   "x": 217,
+   "y": 346,
+   "w": 575,
+   "h": 47
+  },
+  {
+   "text": "《李经理：你能不能今天就把方案发我",
+   "x": 354,
+   "y": 493,
+   "w": 600,
+   "h": 50
+  },
+  {
+   "text": "我今天下午六点前发您",
+   "x": 354,
+   "y": 574,
+   "w": 480,
+   "h": 47
+  },
+  {
+   "text": "输入消息··",
+   "x": 73,
+   "y": 2430,
+   "w": 200,
+   "h": 44
+  }
+ ],
+ "expected": {
+  "bubbles": [
+   {
+    "side": "them",
+    "sender": "them",
+    "text": "你能不能今天就把方案发我",
+    "quote": ""
+   },
+   {
+    "side": "me",
+    "sender": "me",
+    "text": "我今天下午六点前发您",
+    "quote": "《李经理：你能不能今天就把方案发我"
+   }
+  ],
+  "dropped": [
+   {
+    "region": "statusbar_nav_banner",
+    "text": "21：47"
+   },
+   {
+    "region": "statusbar_nav_banner",
+    "text": "5G．．．86％"
+   },
+   {
+    "region": "statusbar_nav_banner",
+    "text": "李经理"
+   },
+   {
+    "region": "inputbar",
+    "text": "输入消息··"
+   }
+  ]
+ }
+}

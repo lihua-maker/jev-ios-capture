@@ -1,0 +1,111 @@
+{
+ "id": "s06_cards_transfer",
+ "engine": "windows",
+ "width": 1170,
+ "height": 2532,
+ "lines": [
+  {
+   "text": "21：47",
+   "x": 68,
+   "y": 50,
+   "w": 112,
+   "h": 34
+  },
+  {
+   "text": "5G．．．86％",
+   "x": 851,
+   "y": 51,
+   "w": 251,
+   "h": 33
+  },
+  {
+   "text": "李经理",
+   "x": 509,
+   "y": 174,
+   "w": 152,
+   "h": 50
+  },
+  {
+   "text": "我先转给你",
+   "x": 217,
+   "y": 346,
+   "w": 239,
+   "h": 47
+  },
+  {
+   "text": "转账",
+   "x": 346,
+   "y": 505,
+   "w": 83,
+   "h": 41
+  },
+  {
+   "text": "¥2980·00",
+   "x": 355,
+   "y": 570,
+   "w": 203,
+   "h": 36
+  },
+  {
+   "text": "请收款",
+   "x": 217,
+   "y": 673,
+   "w": 107,
+   "h": 35
+  },
+  {
+   "text": "收到了",
+   "x": 812,
+   "y": 818,
+   "w": 138,
+   "h": 46
+  },
+  {
+   "text": "输入消息··",
+   "x": 73,
+   "y": 2430,
+   "w": 200,
+   "h": 44
+  }
+ ],
+ "expected": {
+  "bubbles": [
+   {
+    "side": "them",
+    "sender": "them",
+    "text": "我先转给你",
+    "quote": ""
+   },
+   {
+    "side": "them",
+    "sender": "them",
+    "text": "转账¥2980·00请收款",
+    "quote": ""
+   },
+   {
+    "side": "me",
+    "sender": "me",
+    "text": "收到了",
+    "quote": ""
+   }
+  ],
+  "dropped": [
+   {
+    "region": "statusbar_nav_banner",
+    "text": "21：47"
+   },
+   {
+    "region": "statusbar_nav_banner",
+    "text": "5G．．．86％"
+   },
+   {
+    "region": "statusbar_nav_banner",
+    "text": "李经理"
+   },
+   {
+    "region": "inputbar",
+    "text": "输入消息··"
+   }
+  ]
+ }
+}

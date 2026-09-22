@@ -1,0 +1,97 @@
+{
+ "id": "s05_qq_light",
+ "engine": "vision",
+ "width": 1170,
+ "height": 2532,
+ "lines": [
+  {
+   "text": "21:47",
+   "x": 62.9,
+   "y": 47.6,
+   "w": 122.7,
+   "h": 50.9
+  },
+  {
+   "text": "5G ••• 86%",
+   "x": 843.2,
+   "y": 47.9,
+   "w": 263.6,
+   "h": 50.4
+  },
+  {
+   "text": "陈同学",
+   "x": 507,
+   "y": 170,
+   "w": 160.9,
+   "h": 59
+  },
+  {
+   "text": "周末那个活动你还去吗",
+   "x": 209.6,
+   "y": 340.8,
+   "w": 492.4,
+   "h": 58.4
+  },
+  {
+   "text": "去，我周六上午到",
+   "x": 565.5,
+   "y": 501.5,
+   "w": 394.9,
+   "h": 63.5
+  },
+  {
+   "text": "好，我在门口等你",
+   "x": 209.4,
+   "y": 656.2,
+   "w": 400.1,
+   "h": 70.5
+  },
+  {
+   "text": "输入消息.",
+   "x": 68.1,
+   "y": 2424.3,
+   "w": 229.4,
+   "h": 54.6
+  }
+ ],
+ "expected": {
+  "bubbles": [
+   {
+    "side": "them",
+    "sender": "them",
+    "text": "周末那个活动你还去吗",
+    "quote": ""
+   },
+   {
+    "side": "me",
+    "sender": "me",
+    "text": "去，我周六上午到",
+    "quote": ""
+   },
+   {
+    "side": "them",
+    "sender": "them",
+    "text": "好，我在门口等你",
+    "quote": ""
+   }
+  ],
+  "dropped": [
+   {
+    "region": "statusbar_nav_banner",
+    "text": "21:47"
+   },
+   {
+    "region": "statusbar_nav_banner",
+    "text": "5G ••• 86%"
+   },
+   {
+    "region": "statusbar_nav_banner",
+    "text": "陈同学"
+   },
+   {
+    "region": "inputbar",
+    "text": "输入消息."
+   }
+  ]
+ }
+}

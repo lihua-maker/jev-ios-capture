@@ -1,0 +1,110 @@
+{
+ "id": "s11_narrow_dark_group",
+ "engine": "windows",
+ "width": 1125,
+ "height": 2436,
+ "lines": [
+  {
+   "text": "21：47",
+   "x": 68,
+   "y": 50,
+   "w": 113,
+   "h": 34
+  },
+  {
+   "text": "家人群（5）",
+   "x": 455,
+   "y": 174,
+   "w": 213,
+   "h": 52
+  },
+  {
+   "text": "明天回来吃饭吗",
+   "x": 219,
+   "y": 399,
+   "w": 331,
+   "h": 47
+  },
+  {
+   "text": "我给你留了车位",
+   "x": 216,
+   "y": 771,
+   "w": 336,
+   "h": 47
+  },
+  {
+   "text": "输入消息··",
+   "x": 73,
+   "y": 2334,
+   "w": 200,
+   "h": 44
+  },
+  {
+   "text": "5G．．．86％",
+   "x": 806,
+   "y": 50,
+   "w": 252,
+   "h": 34
+  },
+  {
+   "text": "回，下午到",
+   "x": 672,
+   "y": 559,
+   "w": 235,
+   "h": 47
+  },
+  {
+   "text": "谢谢爸",
+   "x": 765,
+   "y": 931,
+   "w": 143,
+   "h": 46
+  }
+ ],
+ "expected": {
+  "bubbles": [
+   {
+    "side": "them",
+    "sender": "them",
+    "text": "明天回来吃饭吗",
+    "quote": ""
+   },
+   {
+    "side": "me",
+    "sender": "me",
+    "text": "回，下午到",
+    "quote": ""
+   },
+   {
+    "side": "them",
+    "sender": "them",
+    "text": "我给你留了车位",
+    "quote": ""
+   },
+   {
+    "side": "me",
+    "sender": "me",
+    "text": "谢谢爸",
+    "quote": ""
+   }
+  ],
+  "dropped": [
+   {
+    "region": "statusbar_nav_banner",
+    "text": "21：47"
+   },
+   {
+    "region": "statusbar_nav_banner",
+    "text": "5G．．．86％"
+   },
+   {
+    "region": "statusbar_nav_banner",
+    "text": "家人群（5）"
+   },
+   {
+    "region": "inputbar",
+    "text": "输入消息··"
+   }
+  ]
+ }
+}

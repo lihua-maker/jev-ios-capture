@@ -1,0 +1,104 @@
+{
+ "id": "s07_media_mixed",
+ "engine": "windows",
+ "width": 1170,
+ "height": 2532,
+ "lines": [
+  {
+   "text": "21：47",
+   "x": 68,
+   "y": 50,
+   "w": 112,
+   "h": 34
+  },
+  {
+   "text": "5G．．．86％",
+   "x": 851,
+   "y": 51,
+   "w": 251,
+   "h": 33
+  },
+  {
+   "text": "王姐",
+   "x": 535,
+   "y": 175,
+   "w": 101,
+   "h": 48
+  },
+  {
+   "text": "这是我刚拍的现场照片",
+   "x": 217,
+   "y": 718,
+   "w": 478,
+   "h": 47
+  },
+  {
+   "text": "012“",
+   "x": 216,
+   "y": 876,
+   "w": 139,
+   "h": 42
+  },
+  {
+   "text": "转文字：明天记得扌巴合同带过来",
+   "x": 216,
+   "y": 955,
+   "w": 546,
+   "h": 39
+  },
+  {
+   "text": "好的",
+   "x": 859,
+   "y": 1104,
+   "w": 93,
+   "h": 46
+  },
+  {
+   "text": "输入消息··",
+   "x": 73,
+   "y": 2430,
+   "w": 200,
+   "h": 44
+  }
+ ],
+ "expected": {
+  "bubbles": [
+   {
+    "side": "them",
+    "sender": "them",
+    "text": "这是我刚拍的现场照片",
+    "quote": ""
+   },
+   {
+    "side": "them",
+    "sender": "them",
+    "text": "012“转文字：明天记得扌巴合同带过来",
+    "quote": ""
+   },
+   {
+    "side": "me",
+    "sender": "me",
+    "text": "好的",
+    "quote": ""
+   }
+  ],
+  "dropped": [
+   {
+    "region": "statusbar_nav_banner",
+    "text": "21：47"
+   },
+   {
+    "region": "statusbar_nav_banner",
+    "text": "5G．．．86％"
+   },
+   {
+    "region": "statusbar_nav_banner",
+    "text": "王姐"
+   },
+   {
+    "region": "inputbar",
+    "text": "输入消息··"
+   }
+  ]
+ }
+}

@@ -1,0 +1,106 @@
+{
+ "id": "s10_typing_indicator",
+ "engine": "vision",
+ "width": 1170,
+ "height": 2532,
+ "lines": [
+  {
+   "text": "21:47",
+   "x": 63.4,
+   "y": 39,
+   "w": 126.8,
+   "h": 58.4
+  },
+  {
+   "text": "5G ••86%",
+   "x": 843.4,
+   "y": 48.7,
+   "w": 263.3,
+   "h": 48.7
+  },
+  {
+   "text": "对方正在输入⋯",
+   "x": 409.5,
+   "y": 170,
+   "w": 355.9,
+   "h": 59
+  },
+  {
+   "text": "以下是新消息",
+   "x": 482.4,
+   "y": 344.7,
+   "w": 205.2,
+   "h": 45.9
+  },
+  {
+   "text": "22:01",
+   "x": 535.7,
+   "y": 427.1,
+   "w": 98.6,
+   "h": 41.8
+  },
+  {
+   "text": "那个款项你考虑得怎么样",
+   "x": 214.5,
+   "y": 540,
+   "w": 536.2,
+   "h": 59
+  },
+  {
+   "text": "我需要再确认一下",
+   "x": 565.5,
+   "y": 701,
+   "w": 394.9,
+   "h": 54
+  },
+  {
+   "text": "输入消息.",
+   "x": 68,
+   "y": 2423.8,
+   "w": 224.8,
+   "h": 55.7
+  }
+ ],
+ "expected": {
+  "bubbles": [
+   {
+    "side": "them",
+    "sender": "them",
+    "text": "那个款项你考虑得怎么样",
+    "quote": ""
+   },
+   {
+    "side": "me",
+    "sender": "me",
+    "text": "我需要再确认一下",
+    "quote": ""
+   }
+  ],
+  "dropped": [
+   {
+    "region": "statusbar_nav_banner",
+    "text": "21:47"
+   },
+   {
+    "region": "statusbar_nav_banner",
+    "text": "5G ••86%"
+   },
+   {
+    "region": "statusbar_nav_banner",
+    "text": "对方正在输入⋯"
+   },
+   {
+    "region": "timesep_or_system",
+    "text": "以下是新消息"
+   },
+   {
+    "region": "timesep_or_system",
+    "text": "22:01"
+   },
+   {
+    "region": "inputbar",
+    "text": "输入消息."
+   }
+  ]
+ }
+}

@@ -1,0 +1,106 @@
+{
+ "id": "s10_typing_indicator",
+ "engine": "windows",
+ "width": 1170,
+ "height": 2532,
+ "lines": [
+  {
+   "text": "21：47",
+   "x": 68,
+   "y": 50,
+   "w": 112,
+   "h": 34
+  },
+  {
+   "text": "5G．．．86％",
+   "x": 851,
+   "y": 51,
+   "w": 251,
+   "h": 33
+  },
+  {
+   "text": "对方正在输入···",
+   "x": 412,
+   "y": 174,
+   "w": 344,
+   "h": 50
+  },
+  {
+   "text": "以下是新消息",
+   "x": 488,
+   "y": 349,
+   "w": 196,
+   "h": 32
+  },
+  {
+   "text": "22：01",
+   "x": 541,
+   "y": 432,
+   "w": 83,
+   "h": 29
+  },
+  {
+   "text": "那个款项你考虑得怎么样",
+   "x": 217,
+   "y": 545,
+   "w": 526,
+   "h": 47
+  },
+  {
+   "text": "我需要再确认一下",
+   "x": 570,
+   "y": 705,
+   "w": 383,
+   "h": 47
+  },
+  {
+   "text": "输入消息··",
+   "x": 73,
+   "y": 2430,
+   "w": 200,
+   "h": 44
+  }
+ ],
+ "expected": {
+  "bubbles": [
+   {
+    "side": "them",
+    "sender": "them",
+    "text": "那个款项你考虑得怎么样",
+    "quote": ""
+   },
+   {
+    "side": "me",
+    "sender": "me",
+    "text": "我需要再确认一下",
+    "quote": ""
+   }
+  ],
+  "dropped": [
+   {
+    "region": "statusbar_nav_banner",
+    "text": "21：47"
+   },
+   {
+    "region": "statusbar_nav_banner",
+    "text": "5G．．．86％"
+   },
+   {
+    "region": "statusbar_nav_banner",
+    "text": "对方正在输入···"
+   },
+   {
+    "region": "timesep_or_system",
+    "text": "以下是新消息"
+   },
+   {
+    "region": "timesep_or_system",
+    "text": "22：01"
+   },
+   {
+    "region": "inputbar",
+    "text": "输入消息··"
+   }
+  ]
+ }
+}

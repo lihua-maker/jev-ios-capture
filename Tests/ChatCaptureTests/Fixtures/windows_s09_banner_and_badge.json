@@ -1,0 +1,84 @@
+{
+ "id": "s09_banner_and_badge",
+ "engine": "windows",
+ "width": 1170,
+ "height": 2532,
+ "lines": [
+  {
+   "text": "21：47",
+   "x": 68,
+   "y": 50,
+   "w": 112,
+   "h": 34
+  },
+  {
+   "text": "王姐：合同改好了吗",
+   "x": 187,
+   "y": 241,
+   "w": 348,
+   "h": 39
+  },
+  {
+   "text": "在忙吗",
+   "x": 217,
+   "y": 346,
+   "w": 141,
+   "h": 47
+  },
+  {
+   "text": "输入消息··",
+   "x": 73,
+   "y": 2430,
+   "w": 200,
+   "h": 44
+  },
+  {
+   "text": "5G．．．86％",
+   "x": 851,
+   "y": 51,
+   "w": 251,
+   "h": 33
+  },
+  {
+   "text": "在的，稍等我看一下",
+   "x": 523,
+   "y": 506,
+   "w": 430,
+   "h": 47
+  }
+ ],
+ "expected": {
+  "bubbles": [
+   {
+    "side": "them",
+    "sender": "them",
+    "text": "在忙吗",
+    "quote": ""
+   },
+   {
+    "side": "me",
+    "sender": "me",
+    "text": "在的，稍等我看一下",
+    "quote": ""
+   }
+  ],
+  "dropped": [
+   {
+    "region": "statusbar_nav_banner",
+    "text": "21：47"
+   },
+   {
+    "region": "statusbar_nav_banner",
+    "text": "5G．．．86％"
+   },
+   {
+    "region": "statusbar_nav_banner",
+    "text": "王姐：合同改好了吗"
+   },
+   {
+    "region": "inputbar",
+    "text": "输入消息··"
+   }
+  ]
+ }
+}
