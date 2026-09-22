@@ -4,6 +4,7 @@ import SwiftUI
 import Photos
 import CoreGraphics
 import CopilotKit
+import JudgeClient
 
 /// Everything the views talk to. Keeps the platform glue (Photos, pasteboard) apart from the
 /// platform-neutral `CopilotKit` so the interesting logic stays testable.

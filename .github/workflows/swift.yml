@@ -25,7 +25,16 @@ jobs:
           TYPESAFE_API_KEY: ${{ secrets.TYPESAFE_API_KEY }}
         run: |
           set -o pipefail   # without this the pipe's exit status hides a failing test suite
-          swift test 2>&1 | tail -60
+          swift test 2>&1 | tee swift-test.log | tail -60
+
+      - name: Upload the full test log
+        # Truncating the log to keep the output readable must not cost the diagnosis.
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: swift-test-log
+          path: swift-test.log
+          if-no-files-found: ignore
 
       - name: Fixture inventory
         run: |

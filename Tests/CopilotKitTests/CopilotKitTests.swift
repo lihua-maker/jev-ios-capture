@@ -214,7 +214,15 @@ final class AnalysisStoreTests: XCTestCase {
                                                            confidence: 0.9, label: nil)],
                                         backend: "typesafeTyped", model: "jev-latest")
         store.save(snapshot)
-        XCTAssertEqual(store.load(), snapshot)
+        let reloaded = try XCTUnwrap(store.load())
+        // Dates survive JSON as seconds-since-2001 doubles; compare with tolerance rather than
+        // relying on bit-exact floating point.
+        XCTAssertEqual(reloaded.createdAt.timeIntervalSince(snapshot.createdAt), 0, accuracy: 0.001)
+        XCTAssertEqual(reloaded.transcript, snapshot.transcript)
+        XCTAssertEqual(reloaded.contactName, snapshot.contactName)
+        XCTAssertEqual(reloaded.candidates, snapshot.candidates)
+        XCTAssertEqual(reloaded.escalationSummary, snapshot.escalationSummary)
+        XCTAssertEqual(reloaded.backend, snapshot.backend)
 
         let stale = Date().addingTimeInterval(-AnalysisStore.freshness - 1)
         store.save(AnalysisSnapshot(createdAt: stale, transcript: "x", contactName: nil, intent: nil,

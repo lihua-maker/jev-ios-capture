@@ -11,8 +11,10 @@ final class VisionReaderTests: XCTestCase {
 
     /// <repo>/shots, located relative to this file so it works from any build directory.
     private func corpusDirectory() throws -> URL {
-        let thisFile = URL(fileURLWithPath: #filePath)                 // Tests/ChatCaptureTests/…
-        let repoRoot = thisFile.deletingLastPathComponent()            // Tests
+        let thisFile = URL(fileURLWithPath: #filePath)                 // <repo>/Tests/ChatCaptureTests/X.swift
+        let repoRoot = thisFile
+            .deletingLastPathComponent()                               // Tests/ChatCaptureTests
+            .deletingLastPathComponent()                               // Tests
             .deletingLastPathComponent()                               // <repo>
         let shots = repoRoot.appendingPathComponent("shots")
         guard FileManager.default.fileExists(atPath: shots.path) else {
