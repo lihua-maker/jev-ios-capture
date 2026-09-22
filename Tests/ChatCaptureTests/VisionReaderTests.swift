@@ -35,10 +35,12 @@ final class VisionReaderTests: XCTestCase {
             let document = try reader.read(url: image)
             XCTAssertGreaterThan(document.lines.count, 3,
                                  "\(image.lastPathComponent): no usable text was recognised")
-            XCTAssertEqual(document.width, 1170, accuracy: 1,
-                           "\(image.lastPathComponent): expected the native iPhone 12 width")
-            XCTAssertEqual(document.height, 2532, accuracy: 1,
-                           "\(image.lastPathComponent): expected the native iPhone 12 height")
+            // The corpus covers 375/390/430pt-wide devices at 3x; anything below 1125px wide means
+            // the image was resampled, which is the one thing this stage must never do.
+            XCTAssertTrue([1125.0, 1170.0, 1290.0].contains(document.width),
+                          "\(image.lastPathComponent): unexpected width \(document.width) — native 3x expected")
+            XCTAssertEqual(document.height / document.width, 2.165, accuracy: 0.01,
+                           "\(image.lastPathComponent): unexpected aspect ratio")
         }
     }
 
