@@ -44,12 +44,20 @@ public struct Bubble: Codable, Equatable {
     public let quote: String
     /// Top of the first line, pixels.
     public let y: Double
+
+    public init(side: Side, sender: String, text: String, quote: String, y: Double) {
+        self.side = side; self.sender = sender; self.text = text; self.quote = quote; self.y = y
+    }
 }
 
 /// A line that was classified as screen chrome rather than message text.
 public struct DroppedLine: Codable, Equatable {
     public let region: String
     public let text: String
+
+    public init(region: String, text: String) {
+        self.region = region; self.text = text
+    }
 }
 
 public struct SegmentResult {

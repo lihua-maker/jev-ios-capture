@@ -3,18 +3,23 @@ import PackageDescription
 
 let package = Package(
     name: "ChatCapture",
-    platforms: [.macOS(.v13)],
+    platforms: [.macOS(.v13), .iOS(.v17)],
     products: [
         .library(name: "ChatCapture", targets: ["ChatCapture"]),
         .library(name: "JudgeClient", targets: ["JudgeClient"]),
     ],
     targets: [
-        // Capture stage: screenshot line boxes -> ordered chat transcript.
+        // Capture stage: screenshot line boxes -> ordered chat transcript. Ships in the app.
         .target(name: "ChatCapture", path: "Sources/ChatCapture"),
-        // Decision stage: configurable routes, typed judgments, drafting and ranking.
+        // Decision stage: configurable routes, typed judgments, drafting and ranking. Ships in the app.
         .target(name: "JudgeClient", path: "Sources/JudgeClient"),
-        // Measurement harness: Apple's recogniser over a folder of screenshots, on a macOS runner.
-        .executableTarget(name: "visionlines", path: "Sources/visionlines"),
+        // App-level composition: settings + keychain + local knowledge + the analysis handoff.
+        // Platform-neutral (takes a CGImage), so it is testable on a macOS runner.
+        .target(name: "CopilotKit", dependencies: ["ChatCapture", "JudgeClient"],
+                path: "Sources/CopilotKit"),
+        // Measurement harness (macOS only): Apple's recogniser over a folder of screenshots.
+        .executableTarget(name: "visionlines", dependencies: ["ChatCapture"],
+                          path: "Sources/visionlines"),
         .testTarget(
             name: "ChatCaptureTests",
             dependencies: ["ChatCapture"],
@@ -25,6 +30,11 @@ let package = Package(
             name: "JudgeClientTests",
             dependencies: ["JudgeClient"],
             path: "Tests/JudgeClientTests"
+        ),
+        .testTarget(
+            name: "CopilotKitTests",
+            dependencies: ["CopilotKit", "JudgeClient", "ChatCapture"],
+            path: "Tests/CopilotKitTests"
         ),
     ]
 )
