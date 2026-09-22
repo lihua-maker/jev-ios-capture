@@ -8,12 +8,50 @@ whole of capture.
 
 ```
 Sources/ChatCapture/     capture stage: OcrLine/OcrDocument -> BubbleSegmenter -> [Bubble]
+                         + VisionTextReader (the in-process recogniser the app runs)
 Sources/JudgeClient/     decision stage: routes, typed judgments, drafting, ranking
-Sources/visionlines/     measurement harness: Apple Vision over a folder of PNGs
-Tests/ChatCaptureTests/  parity fixtures + capture-rule tests
-Tests/JudgeClientTests/  route/question/HTTP/copilot tests (stubbed transport, no network)
+Sources/CopilotKit/      app-level: settings + keychain + local knowledge + analysis handoff
+App/                     SwiftUI app: screenshot intake, analysis, settings, knowledge base
+Keyboard/                keyboard extension: renders the last analysis, inserts on tap
+Tests/                   parity fixtures + capture rules + decision rules + app-level behaviour
+project.yml              XcodeGen spec — the Xcode project is generated, not committed
 shots/                   the 12-screenshot corpus (native 3x, ground truth generated with them)
 ```
+
+## Run it on an iPhone (tested target: iPhone 12, iOS 17+)
+
+```bash
+brew install xcodegen
+xcodegen generate
+open JevCopilot.xcodeproj
+```
+
+Then, in Xcode:
+
+1. Select the **JevCopilot** target → Signing & Capabilities → choose your team. Do the same for
+   **CopilotKeyboard** (a free personal team works, but see the App Group note below).
+2. Build and run on the device. First launch asks for photo-library access — screenshots are read
+   locally; only the judgment request leaves the phone, and only to the endpoint you configure.
+3. Open the **接口** tab, pick a preset, paste a key (**判断接口** is the only required one), and
+   hit **测试连通**. Keys go to the Keychain, never to UserDefaults.
+4. Take a screenshot of a chat, come back, tap **分析最新截图**. The analysis appears in-app and is
+   handed to the keyboard.
+5. Settings → General → Keyboard → Keyboards → Add New Keyboard → **Jev 键盘**, then enable
+   **Full Access** (needed for the clipboard handoff).
+
+**App Group.** The app and the keyboard share the latest analysis through
+`group.ai.jevcopilot`. That capability requires a provisioning profile that grants it; a paid
+account is the path of least resistance. Without it, everything still works — the app puts the
+reply on the clipboard and the keyboard's **插入剪贴板** button inserts it. The app tells you which
+mode you are in.
+
+**Device geometry.** The corpus was rendered at 1170×2532, which is exactly an iPhone 12's native
+resolution, so the capture thresholds apply to your screenshots as measured. Do not turn on
+Display Zoom (it changes the logical size to 375×812 and invalidates the chrome bands).
+
+**What CI does and does not verify.** CI compiles the app and the keyboard for the device SDK and
+asserts the extension is embedded with the right extension point and `RequestsOpenAccess`. It
+cannot exercise the photo library, keyboard insertion or App Groups — those need the device.
 
 ## The two halves
 
