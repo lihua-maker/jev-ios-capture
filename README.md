@@ -64,3 +64,39 @@ table is only as representative as `shots/`.
 Two known recall gaps in the baseline are single-CJK-character bubbles ("好", "行") that the
 recognition engine missed entirely. Whether Vision does better on those is one of the things
 this run answers.
+
+## Result — run 35735396725 (first attempt, green)
+
+Vision ran over all 12 shots and the artifacts were scored with the same evaluator and ground
+truth as the Windows baseline:
+
+| | pipeline-pass | fully clean | single-char bubbles | dark-mode sender labels | notification banner |
+|---|---|---|---|---|---|
+| **Apple Vision** | **12/12** | **12/12** | all read | **2/2** | read (must be filtered) |
+| Windows.Media.Ocr | 12/12 | 10/12 | missed in 2/12 | 0/2 | missed |
+
+**Vision's first run scored 6/12, and every failure was a bug in the capture rules — not in
+Vision.** Vision is not "worse": its ink boxes are ~25% taller for the same text (59px vs 47px
+for 16pt at 3x), which changes every gap in the layout. Three rules had been implicitly tuned to
+one recogniser's metrics:
+
+1. A fixed `1.9 × median_line_height` merge threshold became too permissive and merged three
+   bubbles into one. → **Adaptive split**: cut at the largest relative jump in the sorted
+   per-side gap distribution (Vision computes 55.3px, Windows 88.5px on the same screen — both
+   correct for their own metrics).
+2. Vision splits a wrapped trailing character onto its own line, and a lone character's box is
+   too padded to estimate font size from. → **Font size from the median advance of
+   multi-character lines only**, plus **orphan absorption**: a lone short line whose left edge
+   matches the bubble above merges back into it (the fragment's centre fell on the wrong half of
+   the screen and it was attributed to the wrong person).
+3. Vision reads notification banners that other engines miss, and a banner's text sits *below*
+   the nav-bar band. → New rule: in the top 30% of the screen, any line starting left of
+   `0.15*W` is banner chrome (bubble ink starts at ~0.185\*W, banner text at ~0.137\*W).
+
+After the fix the **same** segmenter scores 12/12 on both engines. The rules are now
+engine-independent geometry, which is exactly what the Swift port implements.
+
+Vision's real advantages, worth designing for: no single-character dropouts, readable
+low-contrast labels, and it reads overlay chrome — so the banner filter is mandatory rather than
+optional. Its downside is that "what counts as one box" is looser, which is why the adaptive
+rules above are required.
