@@ -20,6 +20,9 @@ jobs:
         run: swift build -c release
 
       - name: Parity + rule tests
+        env:
+          # Optional: add this secret and the live API checks stop being skipped.
+          TYPESAFE_API_KEY: ${{ secrets.TYPESAFE_API_KEY }}
         run: |
           set -o pipefail   # without this the pipe's exit status hides a failing test suite
           swift test 2>&1 | tail -60

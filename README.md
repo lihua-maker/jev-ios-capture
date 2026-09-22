@@ -7,27 +7,56 @@ a **user screenshot** — which makes this stage, text recognition plus layout r
 whole of capture.
 
 ```
-Sources/ChatCapture/     the port: OcrLine/OcrDocument -> BubbleSegmenter -> [Bubble]
+Sources/ChatCapture/     capture stage: OcrLine/OcrDocument -> BubbleSegmenter -> [Bubble]
+Sources/JudgeClient/     decision stage: routes, typed judgments, drafting, ranking
 Sources/visionlines/     measurement harness: Apple Vision over a folder of PNGs
-Tests/ChatCaptureTests/  parity tests against the reference implementation + rule tests
+Tests/ChatCaptureTests/  parity fixtures + capture-rule tests
+Tests/JudgeClientTests/  route/question/HTTP/copilot tests (stubbed transport, no network)
 shots/                   the 12-screenshot corpus (native 3x, ground truth generated with them)
 ```
 
-## What it does
+## The two halves
 
 ```
-screenshot ──Vision──> [OcrLine{text,x,y,w,h}] ──BubbleSegmenter──> [Bubble{side,sender,text,quote}]
+screenshot ──Vision──> [OcrLine] ──BubbleSegmenter──> [Bubble{side,sender,text,quote}]
                                                                   + [DroppedLine{region,text}]
+[Bubble] + user facts ──JudgeClient──> Judgment{intent, danger, reply-now, verify-first}
+                                  └──> reply route (only if a reply is due) ──> candidates
+                                  └──> ranked by one score question per candidate
 ```
+
+### Capture stage
 
 `OcrLine` is the only thing the recogniser must supply, which is what makes the rules
 engine-independent. `DroppedLine` records the screen chrome that was discarded (status bar, nav
 bar, notification banner, timestamps, input bar, avatar/badge artwork) — chrome leaking into a
 transcript is a data-integrity bug, so it is reported rather than silently swallowed.
 
+### Decision stage
+
+Three independently configurable routes (judgment / reply / vision) with the v1.3 presets
+(TypeSafe, OpenRouter, DeepSeek, Qwen-compatible). The **key always inherits**; an address only
+inherits inside one protocol family, so a TypeSafe-only setup can never silently point the reply
+route at an endpoint that serves no chat completions.
+
+Judgment has two backends, and the difference is part of the result:
+
+| backend | what it is | what it guarantees |
+|---|---|---|
+| `typesafeTyped` | the typed System One API, `POST /v1/systemone` | calibrated answers with probabilities and confidence |
+| `llmJSON` | a chat model prompted for the same JSON shape | typed, **uncalibrated** — an answer that omits `confidence` is recorded as 0 and escalates instead of being acted on |
+
+`Copilot.run` is the product's identity in one call: judge first (four independent questions in
+one request), draft only when the judgment says a reply is due, then score every candidate on one
+dimension so the ranking is comparable and re-rankable without re-running inference. Whatever is
+too flat or too risky comes back as an `Escalation` (`.highRisk`, `.verificationRequired`,
+`.lowConfidence`) instead of a guess.
+
 ## Verified, not assumed
 
-`swift test` runs two kinds of test:
+`swift test` runs **62 tests** (3 of them live-API checks that skip without a key):
+
+### Capture stage
 
 1. **Parity (25 fixtures).** `make_fixtures.py` in the spike workspace runs the validated Python
    reference over 12 screenshots × two recognisers (Apple Vision and Windows OCR) *plus* a 1x
@@ -36,6 +65,19 @@ transcript is a data-integrity bug, so it is reported rather than silently swall
    behind "the engine behaves differently".
 2. **Rule tests.** One test per rule that cost real debugging, asserted directly so a future
    "simplification" fails loudly.
+
+### Decision stage
+
+Stubbed transport, no network: the exact request shape (path, headers, body — including the
+`choice` criteria being a `key=description` map), response decoding (noul/score/choice with
+probabilities, legend and confidence), every error path (401/403, a provider's "product is not
+activated" 400, malformed bodies, unreachable hosts), route inheritance, question validation, and
+the copilot's ordering + escalation rules.
+
+`LiveAPITests` re-run the Phase 0 verdict against the real API when `TYPESAFE_API_KEY` is present:
+the scam transcript must come back `intent = scam` with `danger >= 2.5`, the boundary-holding
+reply must outrank the one that pays up, and an ordinary work chat must not be flagged. Add the
+key as a repository secret and they run in CI instead of skipping.
 
 | | pipeline-pass | fully clean |
 |---|---|---|
