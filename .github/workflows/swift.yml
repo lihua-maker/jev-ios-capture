@@ -20,7 +20,9 @@ jobs:
         run: swift build -c release
 
       - name: Parity + rule tests
-        run: swift test 2>&1 | tail -30
+        run: |
+          set -o pipefail   # without this the pipe's exit status hides a failing test suite
+          swift test 2>&1 | tail -60
 
       - name: Fixture inventory
         run: |

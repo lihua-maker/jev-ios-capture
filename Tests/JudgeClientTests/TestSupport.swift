@@ -4,8 +4,10 @@ import XCTest
 
 /// A transport that answers from a script and records what was asked, so every client behaviour
 /// is testable without a network — and so the exact request shape can be asserted.
+///
+/// Test-only and deliberately unlocked: actions run sequentially and a lock would trip the
+/// "unavailable from asynchronous contexts" diagnostic that becomes an error in Swift 6.
 final class StubTransport: HTTPTransport, @unchecked Sendable {
-    private let lock = NSLock()
     private var recorded: [HTTPRequest] = []
     private let responder: (HTTPRequest) throws -> HTTPResponse
 
@@ -18,14 +20,12 @@ final class StubTransport: HTTPTransport, @unchecked Sendable {
     }
 
     func send(_ request: HTTPRequest) async throws -> HTTPResponse {
-        lock.lock(); recorded.append(request); lock.unlock()
+        recorded.append(request)
         return try responder(request)
     }
 
-    var calls: [HTTPRequest] {
-        lock.lock(); defer { lock.unlock() }; return recorded
-    }
-    var lastRequest: HTTPRequest? { calls.last }
+    var calls: [HTTPRequest] { recorded }
+    var lastRequest: HTTPRequest? { recorded.last }
 }
 
 enum TestJSON {
