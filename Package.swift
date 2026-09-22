@@ -7,6 +7,7 @@ let package = Package(
     products: [
         .library(name: "ChatCapture", targets: ["ChatCapture"]),
         .library(name: "JudgeClient", targets: ["JudgeClient"]),
+        .library(name: "CopilotKit", targets: ["CopilotKit"]),
     ],
     targets: [
         // Capture stage: screenshot line boxes -> ordered chat transcript. Ships in the app.

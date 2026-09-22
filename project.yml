@@ -1,0 +1,96 @@
+# XcodeGen spec — the Xcode project is generated, not committed, so the app configuration is
+# reviewable as text and CI can build it without a Mac in the loop.
+#
+#   brew install xcodegen && xcodegen generate && open JevCopilot.xcodeproj
+#
+# Signed/installed by you; CI builds it unsigned for the device SDK.
+
+name: JevCopilot
+
+options:
+  bundleIdPrefix: ai.jevcopilot
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+
+packages:
+  JevPackages:
+    path: .
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+    SWIFT_STRICT_CONCURRENCY: minimal
+
+targets:
+
+  JevCopilot:
+    type: application
+    platform: iOS
+    sources:
+      - path: App
+    dependencies:
+      - package: JevPackages
+        product: CopilotKit
+      - package: JevPackages
+        product: JudgeClient
+      - package: JevPackages
+        product: ChatCapture
+      - target: CopilotKeyboard
+        embed: true
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: Jev
+        UILaunchScreen: {}
+        ITSAppUsesNonExemptEncryption: false
+        # Screenshots are read locally; nothing is uploaded except the judgment request you
+        # configure yourself.
+        NSPhotoLibraryUsageDescription: 读取你自己截的聊天截图，在本地识别与分析；图片不会上传。
+    entitlements:
+      path: App/JevCopilot.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.ai.jevcopilot
+
+  CopilotKeyboard:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: Keyboard
+    dependencies:
+      - package: JevPackages
+        product: CopilotKit
+    info:
+      path: Keyboard/Info.plist
+      properties:
+        CFBundleDisplayName: Jev 键盘
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.keyboard-service
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).KeyboardViewController
+          NSExtensionAttributes:
+            IsASCIICapable: true
+            PrefersRightToLeft: false
+            PrimaryLanguage: zh-Hans
+            # Needed for the clipboard handoff and for any future network use in the keyboard.
+            RequestsOpenAccess: true
+    entitlements:
+      path: Keyboard/CopilotKeyboard.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.ai.jevcopilot
+
+schemes:
+  JevCopilot:
+    build:
+      targets:
+        JevCopilot: all
+        CopilotKeyboard: all
+    run:
+      config: Debug
+    test:
+      config: Debug

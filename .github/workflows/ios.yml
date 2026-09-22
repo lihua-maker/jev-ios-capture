@@ -1,0 +1,55 @@
+name: ios
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  device-build:
+    # Compiles the app + keyboard extension for the DEVICE SDK on a runner, unsigned. Signing and
+    # installing stay on the developer's Mac; everything up to that point is verified here.
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Toolchain
+        run: |
+          swift --version
+          xcodebuild -version
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate the Xcode project
+        run: xcodegen generate
+
+      - name: Build the app and the keyboard for a real device (unsigned)
+        run: |
+          set -o pipefail
+          xcodebuild -project JevCopilot.xcodeproj -scheme JevCopilot \
+            -sdk iphoneos -destination 'generic/platform=iOS' -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            build 2>&1 | tail -60
+
+      - name: Confirm the keyboard extension was produced and will be recognised
+        run: |
+          set -o pipefail
+          PRODUCTS=$(xcodebuild -project JevCopilot.xcodeproj -scheme JevCopilot \
+            -sdk iphoneos -configuration Debug -showBuildSettings 2>/dev/null \
+            | awk -F' = ' '/ BUILT_PRODUCTS_DIR =/{print $2; exit}')
+          APP="$PRODUCTS/JevCopilot.app"
+          echo "app: $APP"
+          test -d "$APP" || { echo "::error::the app bundle was not produced"; exit 1; }
+          test -d "$APP/PlugIns/CopilotKeyboard.appex" || {
+            echo "::error::the keyboard extension is not embedded in the app"; exit 1; }
+          # An extension missing the keyboard point identifier installs fine but never shows up in
+          # Settings — a silent failure worth failing the build over.
+          POINT=$(/usr/libexec/PlistBuddy -c 'Print :NSExtension:NSExtensionPointIdentifier' \
+                  "$APP/PlugIns/CopilotKeyboard.appex/Info.plist")
+          echo "extension point: $POINT"
+          test "$POINT" = "com.apple.keyboard-service"
+          ACCESS=$(/usr/libexec/PlistBuddy -c 'Print :NSExtension:NSExtensionAttributes:RequestsOpenAccess' \
+                   "$APP/PlugIns/CopilotKeyboard.appex/Info.plist")
+          echo "RequestsOpenAccess: $ACCESS"
+          ls "$APP"
