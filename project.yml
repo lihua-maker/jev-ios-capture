@@ -31,6 +31,11 @@ targets:
   JevCopilot:
     type: application
     platform: iOS
+    # The keyboard's identifier must be prefixed with the app's, so both are stated explicitly
+    # rather than derived from the target names.
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: ai.jevcopilot.app
     sources:
       - path: App
     dependencies:
@@ -60,6 +65,9 @@ targets:
   CopilotKeyboard:
     type: app-extension
     platform: iOS
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: ai.jevcopilot.app.keyboard
     sources:
       - path: Keyboard
     dependencies:

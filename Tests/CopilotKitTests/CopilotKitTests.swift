@@ -204,7 +204,7 @@ final class AnalysisStoreTests: XCTestCase {
         return AnalysisStore(fileURL: url)
     }
 
-    func testRoundTripAndFreshness() {
+    func testRoundTripAndFreshness() throws {
         let store = self.store()
         let snapshot = AnalysisSnapshot(transcript: "我: 在的", contactName: "李经理",
                                         intent: "scam", danger: 3.16, dangerLabel: "高度可疑",
