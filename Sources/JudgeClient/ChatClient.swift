@@ -40,7 +40,7 @@ public struct ChatMessage: Equatable {
     public static func userImage(prompt: String, base64PNG: String) -> ChatMessage {
         ChatMessage(role: "user", content: .parts([
             Part(type: "text", text: prompt),
-            Part(type: "image_url", imageURL: ImageURL(url: "data:image/png;base64,\(base64PNG)")),
+            Part(type: "image_url", imageURL: Part.ImageURL(url: "data:image/png;base64,\(base64PNG)")),
         ]))
     }
 }
