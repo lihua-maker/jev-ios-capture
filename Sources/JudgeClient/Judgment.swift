@@ -158,7 +158,8 @@ public struct Judgment: Equatable {
     }
 
     /// True when any answer is too flat to act on. A choice/score confidence near 0.5 means the
-    /// distribution is spread over alternatives — it is not "medium intensity".
+    /// distribution is spread over alternatives — it is not "medium intensity". A noul answer has no
+    /// distribution to concentrate, so its absent confidence counts as settled here.
     public var isLowConfidence: Bool {
         response.answers.values.contains { ($0.confidence ?? 1) < policy.lowConfidence }
     }
@@ -170,9 +171,12 @@ public struct Judgment: Equatable {
         }
         if needsVerification { return .verificationRequired }
         if isLowConfidence {
+            // Same rule as `isLowConfidence`: an answer without a distribution cannot be the
+            // least-confident one, or the two verdicts would disagree about which question is at
+            // fault.
             let (name, conf) = response.answers
-                .map { ($0.key, $0.value.confidence ?? 0) }
-                .min { $0.1 < $1.1 } ?? ("", 0)
+                .map { ($0.key, $0.value.confidence ?? 1) }
+                .min { $0.1 < $1.1 } ?? ("", 1)
             return .lowConfidence(question: name, confidence: conf)
         }
         return nil

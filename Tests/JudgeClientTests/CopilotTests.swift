@@ -66,10 +66,11 @@ final class CopilotTests: XCTestCase {
             .run(transcript: "x", draftCount: 2)
 
         XCTAssertTrue(run.drafted)
-        XCTAssertEqual(run.candidates.map { $0.text }, ["草稿一", "草稿二"])
-        XCTAssertEqual(transport.calls.compactMap { $0.url.path }, [
-            "/v1/systemone", "/chat/completions", "/v1/systemone",
-        ])
+                XCTAssertEqual(run.candidates.map { $0.text }, ["草稿一", "草稿二"])
+                // order matters: judge the conversation, draft only because a reply is due, then rank.
+                // (compare by role — the chat route lives at a different path on every provider)
+                let roles = transport.calls.map { $0.url.path.hasSuffix("/chat/completions") ? "chat" : "judge" }
+                XCTAssertEqual(roles, ["judge", "chat", "judge"])
         // the ranking request must carry the candidates as backticked state paths
         let rankingBody = TestJSON.json(transport.calls.last)
         let state = try XCTUnwrap(rankingBody["state"] as? String)

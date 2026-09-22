@@ -139,9 +139,12 @@ public struct RouteSet: Equatable {
         self.judgment = judgment; self.reply = reply; self.vision = vision
     }
 
-    /// One-key setup: everything inherits from the judgment route.
+    /// One-key setup: the judgment route is given, and reply/vision are left blank so they inherit
+    /// the key (and, when the judgment route speaks the same protocol family, the address too).
+    /// They must NOT be copies of the judgment config — a typed-judgment preset can never serve a
+    /// chat-completions request.
     public static func single(_ config: RouteConfig) -> RouteSet {
-        RouteSet(judgment: config, reply: config, vision: config)
+        RouteSet(judgment: config)
     }
 
     public func resolve(_ kind: RouteKind) throws -> ResolvedRoute {
