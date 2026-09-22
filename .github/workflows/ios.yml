@@ -9,7 +9,10 @@ jobs:
   device-build:
     # Compiles the app + keyboard extension for the DEVICE SDK on a runner, unsigned. Signing and
     # installing stay on the developer's Mac; everything up to that point is verified here.
-    runs-on: macos-14
+    #
+    # macos-15 (Xcode 16) is required: XcodeGen writes project format 77, which Xcode 15 cannot
+    # read ("cannot be opened because it is in a future Xcode project file format").
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
 

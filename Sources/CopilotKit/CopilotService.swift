@@ -92,9 +92,10 @@ public final class CopilotService {
             let route = try settings.routes(keyProvider: keyProvider).resolve(kind)
             switch kind {
             case .judgment:
-                return await (route.preset == .typesafe
+                let backend: JudgmentBackend = route.preset == .typesafe
                     ? JevClient(route: route, transport: transport)
-                    : LLMJudgeClient(route: route, transport: transport)).probe()
+                    : LLMJudgeClient(route: route, transport: transport)
+                return await backend.probe()
             case .reply, .vision:
                 return await ChatClient(route: route, transport: transport).probe()
             }

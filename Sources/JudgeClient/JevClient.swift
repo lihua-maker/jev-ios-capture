@@ -4,6 +4,10 @@ public struct ProbeResult: Equatable {
     public let ok: Bool
     public let detail: String
     public let millis: Int?
+
+    public init(ok: Bool, detail: String, millis: Int?) {
+        self.ok = ok; self.detail = detail; self.millis = millis
+    }
 }
 
 /// The typed-judgment client (TypeSafe System One / Jev).
