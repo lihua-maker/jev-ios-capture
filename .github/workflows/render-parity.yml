@@ -35,7 +35,7 @@ jobs:
       - name: Render the corpus with this machine's fonts
         run: |
           set -o pipefail
-          python3 oracle/render_macos.py --out "$RUNNER_TEMP/renders" \
+          python3 oracle/render_parity.py --out "$RUNNER_TEMP/renders" \
             --visionlines .build/release/visionlines 2>&1 | tee "$RUNNER_TEMP/render.log"
 
       - name: Score the renders against the ground truth
