@@ -29,12 +29,26 @@ jobs:
 
       - name: Build the app and the keyboard for a real device (unsigned)
         run: |
-          set -o pipefail
-          xcodebuild -project JevCopilot.xcodeproj -scheme JevCopilot \
-            -sdk iphoneos -destination 'generic/platform=iOS' -configuration Debug \
-            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
-            build 2>&1 | tail -60
+          set +e
+          xcodebuild -project JevCopilot.xcodeproj -scheme JevCopilot             -sdk iphoneos -destination 'generic/platform=iOS' -configuration Debug             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=""             build > "$RUNNER_TEMP/xcodebuild.log" 2>&1
+          status=$?
+          # Print the compiler's actual diagnostics BEFORE the summary: piping xcodebuild through
+          # tail keeps the tail and drops every "error:" line with it.
+          if [ $status -ne 0 ]; then
+            echo "--- compiler diagnostics"
+            grep -E ": (error|warning):" "$RUNNER_TEMP/xcodebuild.log" | head -30 || true
+            echo "--- last 15 lines"
+          fi
+          tail -15 "$RUNNER_TEMP/xcodebuild.log"
+          exit $status
 
+      - name: Keep the build log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcodebuild-log
+          path: ${{ runner.temp }}/xcodebuild.log
+          if-no-files-found: warn
       - name: Confirm the keyboard extension was produced and will be recognised
         run: |
           set -o pipefail

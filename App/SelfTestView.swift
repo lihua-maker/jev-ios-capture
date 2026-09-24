@@ -50,8 +50,9 @@ struct SelfTestView: View {
                         ForEach(report.checks) { c in
                             HStack(alignment: .top, spacing: 8) {
                                 Text(c.kind == .info ? "·" : (c.passed ? "✓" : "✗"))
-                                    .foregroundStyle(c.kind == .info ? .secondary
-                                                     : (c.passed ? .green : .red))
+                                    .foregroundStyle(c.kind == .info
+                                                     ? Color.secondary
+                                                     : (c.passed ? Color.green : Color.red))
                                     .font(.body.monospaced())
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(c.name).font(.subheadline)

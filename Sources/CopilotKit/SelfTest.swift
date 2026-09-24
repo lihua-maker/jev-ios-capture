@@ -5,7 +5,7 @@ import JudgeClient
 
 /// One line of the on-device self-test report.
 public struct SelfTestCheck: Identifiable {
-    public enum Kind {
+    public enum Kind: Equatable {
         /// Must pass: it is deterministic given this device.
         case check
         /// Reported for diagnosis; never fails the run.
