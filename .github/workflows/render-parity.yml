@@ -53,6 +53,7 @@ jobs:
           name: render-parity
           path: |
             ${{ runner.temp }}/renders/*.png
+            ${{ runner.temp }}/renders/*.ocr.json
             ${{ runner.temp }}/renders/metrics.json
             ${{ runner.temp }}/render.log
             ${{ runner.temp }}/score.log
