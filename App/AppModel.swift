@@ -50,7 +50,7 @@ final class AppModel: ObservableObject {
     /// Runs the on-device self-test: a bundled corpus screenshot plus the output recorded for it,
     /// so an install can be verified without sending any screenshot of a real conversation.
     func selfTest(screen: String) async -> SelfTestReport {
-        await SelfTest.run(settings: settings, screen: screen, transport: transport)
+        await SelfTest.run(settings: settings, screen: screen)   // default URLSession transport
     }
 
     func analyze(image: UIImage, contactName: String? = nil) async {
