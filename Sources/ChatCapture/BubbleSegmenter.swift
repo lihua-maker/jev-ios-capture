@@ -73,12 +73,6 @@ public enum BubbleSegmenter {
         return min(0.93, max(0.80, (1.0 + 12.0 / bodyPx) / 2.0))
     }
 
-    /// The line after `ln` in the same reading order, or nil at the end.
-    static func nextLine(_ ln: OcrLine, _ lines: [OcrLine]) -> OcrLine? {
-        guard let i = lines.firstIndex(where: { $0 === ln }) else { return nil }
-        return i + 1 < lines.count ? lines[i + 1] : nil
-    }
-
     /// Would this line be read as a group-chat sender label for the line below it?
     ///
     /// Asked BEFORE the banner filter, because a banner's text starts ~0.137*W and a sender label
@@ -130,10 +124,11 @@ public enum BubbleSegmenter {
         // without trusting an ink-height ratio, which is a function of the recogniser and the font.
         let bodyAdv = bodyAdvance(sorted)
 
-        for ln in sorted {
+        for (index, ln) in sorted.enumerated() {
             let cx = ln.x + ln.w / 2
             let cy = ln.y + ln.h / 2
             let tn = TextMetrics.norm(ln.text)
+            let nxt: OcrLine? = index + 1 < sorted.count ? sorted[index + 1] : nil
 
             // R1 — status bar (44pt) + nav bar (44pt) = 88pt of a 320…440pt-wide screen.
             if cy < 0.226 * W {
@@ -141,7 +136,7 @@ public enum BubbleSegmenter {
             }
             // R1b — a notification banner insets its text left of the message rail (bubble ink
             // starts ~0.185*W, banner text ~0.137*W) and can sit below the nav band.
-            if cy < 0.30 * H && ln.x < 0.15 * W && !looksLikeLabel(ln, nextLine(ln, sorted), W, medH) {
+            if cy < 0.30 * H && ln.x < 0.15 * W && !looksLikeLabel(ln, nxt, W, medH) {
                 dropped.append(DroppedLine(region: "banner_overlay", text: ln.text)); continue
             }
             // R1 — input bar + home-indicator safe area.
