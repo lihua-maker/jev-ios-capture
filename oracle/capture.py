@@ -57,6 +57,23 @@ def gap_threshold(gaps, med_h):
 def advance(ln):
     return ln["w"] / weight(ln["text"])
 
+def body_advance(lines):
+    """Median advance of the lines that are certainly body text (>= 4 characters).
+
+    Used to decide "is this line smaller than body text?" without trusting a global ink-height
+    median, which mixes nav bars, sender labels, timestamps and chat text, and shifts with the
+    renderer (measured: the same 12pt separator measures 0.73 of the median under Windows OCR and
+    0.89 under Apple Vision after a font change, so a ratio threshold on that quantity is a coin
+    flip). The RATIO OF ADVANCES between lines of one image is stable across both.
+    """
+    advs = sorted(advance(l) for l in lines if len(norm(l["text"])) >= 4)
+    if not advs:
+        return 0.0
+    # 75th percentile, not the median: a screen with only one or two body lines and several small
+    # ones drags a median down far enough to unset the threshold it feeds (measured on a synthetic
+    # 3-line screen: median 40 vs divider 34.2, which is a 0.85 ratio of 34.0 — a 0.2px miss).
+    return advs[min(len(advs) - 1, round(0.75 * (len(advs) - 1)))]
+
 def levenshtein(a, b):
     if len(a) < len(b): a, b = b, a
     prev = list(range(len(b) + 1))
@@ -85,6 +102,7 @@ def segment(doc):
     if not lines:
         return [], dropped, (W, H)
     med_h = sorted(l["h"] for l in lines)[len(lines) // 2]
+    body_adv = body_advance(lines)
 
     for ln in lines:
         cx, cy = ln["x"] + ln["w"] / 2, ln["y"] + ln["h"] / 2
@@ -99,8 +117,16 @@ def segment(doc):
             dropped.append(("banner_overlay", t)); continue
         if cy > H - 0.235 * W:                   # input bar (+ home indicator safe area)
             dropped.append(("inputbar", t)); continue
-        if abs(cx - W / 2) < 0.08 * W and ln["w"] < 0.6 * W and ln["h"] <= 0.85 * med_h:
-            dropped.append(("timesep_or_system", t)); continue   # 21:38 / 以下是新消息
+        # Centred system lines: 21:38 / 以下是新消息 / 撤回提示. The discriminator is GEOMETRY, not
+        # size. Measured over both renderers, genuine centred lines sit within 0.0021*W of the screen
+        # centre while the closest small line INSIDE a bubble sits at 0.0479*W — a 23x gap, so a
+        # 0.02*W bound has ~9x margin either side. Size was the old discriminator and it flipped
+        # 0.73 -> 0.89 across a font change, which is how a divider grew into a bubble. The width
+        # bound excludes a wide wrapped bubble whose ink centre lands near the middle (a 0.52*W
+        # left-anchored bubble measures 0.44*W); the advance is only a safety condition.
+        if (abs(cx - W / 2) < 0.02 * W and ln["w"] < 0.45 * W
+                and body_adv and advance(ln) < 0.85 * body_adv):
+            dropped.append(("timesep_or_system", t)); continue
         # icon/badge hallucination: glyph-shaped or a tiny box hugging the avatar column
         glyphish = tn and all(ch in GLYPHS for ch in tn)
         tiny_badge = len(tn) <= 2 and ln["h"] <= 0.8 * med_h and ln["w"] <= 0.06 * W
@@ -122,7 +148,7 @@ def segment(doc):
     for i, ln in enumerate(kept[:-1]):
         nxt = kept[i + 1]
         gap = nxt["y"] - (ln["y"] + ln["h"])
-        if (advance(ln) < 0.88 * advance(nxt) and abs(ln["x"] - nxt["x"]) < 0.04 * W
+        if (ln["h"] < 0.85 * nxt["h"] and abs(ln["x"] - nxt["x"]) < 0.07 * W
                 and 0 <= gap < 1.45 * med_h and (ln["x"] + ln["w"] / 2) < W / 2
                 and ln["w"] < 0.4 * W and len(norm(ln["text"])) <= 8):
             labels[i + 1] = ln["text"]; used.add(i)

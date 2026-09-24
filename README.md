@@ -92,15 +92,20 @@ too flat or too risky comes back as an `Escalation` (`.highRisk`, `.verification
 
 ## Verified, not assumed
 
-`swift test` runs **62 tests** (3 of them live-API checks that skip without a key):
+`swift test` runs the whole suite (3 of the checks are live-API tests that skip without a key):
 
 ### Capture stage
 
-1. **Parity (25 fixtures).** `make_fixtures.py` in the spike workspace runs the validated Python
-   reference over 12 screenshots × two recognisers (Apple Vision and Windows OCR) *plus* a 1x
-   capture where avatar artwork really was recognised as text. The Swift port must reproduce the
-   reference's bubbles **and** its dropped-chrome classification exactly. A port bug cannot hide
-   behind "the engine behaves differently".
+1. **Parity (37 fixtures).** `make_fixtures.py` in the spike workspace runs the validated Python
+   reference over 12 screenshots × **three** font/recogniser combinations — Apple Vision over
+   Windows-rendered PNGs, Apple Vision over macOS-rendered PNGs (PingFang SC), Windows OCR in
+   Microsoft YaHei — *plus* a 1x capture where avatar artwork really was recognised as text. The
+   Swift port must reproduce the reference's bubbles **and** its dropped-chrome classification
+   exactly. A port bug cannot hide behind "the engine behaves differently".
+   The `visionmac` family exists because a font change is a *behavioural* change here: the rules
+   key off text metrics, and PingFang SC moved the median character advance 41.4px → 49.1px
+   (+18.6%), which broke two rules that had been tuned to one renderer and cost the corpus its
+   first 10/12.
 2. **Rule tests.** One test per rule that cost real debugging, asserted directly so a future
    "simplification" fails loudly.
 
@@ -140,6 +145,16 @@ Rules that exist because of a measured failure — full reasoning in the spike w
   shape and a tiny box near the avatar rail — never on text length alone.
 - **R1b notification banners** are read by Vision but sit below the nav-band cutoff, so in the top
   30% of the screen anything starting left of `0.15*W` is chrome.
+- **R2 centred system lines need geometry AND size.** Every condition is measured: centred within
+  `0.02*W` (real dividers 0.0021*W, the closest small line inside a bubble 0.0479*W), narrower
+  than `0.45*W`, and set smaller than the body as an **advance** ratio (`< 0.85 ×` the 75th
+  percentile of body-line advances). Size alone was the original rule and the same 12pt divider
+  measured `0.73` of a global ink-height median under Windows OCR but `0.89` under Vision in
+  PingFang SC — it grew into a bubble. Geometry alone deletes real messages: a narrower line
+  inside a right-aligned bubble floats off the rail, and one measures 0.0017*W off centre.
+- **R4 label size is an ink-height ratio within one image**, not an advance ratio: an 11pt label
+  over 16pt body measures 0.66 under *both* engines, while the advance ratio for the same label
+  drifted 0.79 → 0.885 across the font change and crossed the old 0.88 threshold.
 - **Never downscale.** Native 3x: 9/9 bubbles, 97.7% char accuracy. The same page at 1x: 16
   bubbles (7 read out of the avatar squares), 86.9%.
 

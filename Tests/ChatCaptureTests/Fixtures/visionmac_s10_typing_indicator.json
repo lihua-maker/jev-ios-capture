@@ -1,0 +1,106 @@
+{
+ "id": "s10_typing_indicator",
+ "engine": "visionmac",
+ "width": 1170,
+ "height": 2532,
+ "lines": [
+  {
+   "text": "21:47",
+   "x": 58.3,
+   "y": 38.6,
+   "w": 127.1,
+   "h": 59.2
+  },
+  {
+   "text": "5G •••86%",
+   "x": 833.5,
+   "y": 48,
+   "w": 273.2,
+   "h": 50.1
+  },
+  {
+   "text": "对方正在输入..",
+   "x": 399.8,
+   "y": 165.6,
+   "w": 375.4,
+   "h": 63.4
+  },
+  {
+   "text": "以下是新消息",
+   "x": 482.5,
+   "y": 345.2,
+   "w": 205,
+   "h": 44.9
+  },
+  {
+   "text": "22:01",
+   "x": 541.1,
+   "y": 433,
+   "w": 92.6,
+   "h": 30
+  },
+  {
+   "text": "那个款项你考虑得怎么样",
+   "x": 214.5,
+   "y": 540,
+   "w": 541.1,
+   "h": 59
+  },
+  {
+   "text": "我需要再确认一下",
+   "x": 560.6,
+   "y": 710.9,
+   "w": 394.9,
+   "h": 49.1
+  },
+  {
+   "text": "输入消息.",
+   "x": 68.1,
+   "y": 2424.1,
+   "w": 234.3,
+   "h": 50.3
+  }
+ ],
+ "expected": {
+  "bubbles": [
+   {
+    "side": "them",
+    "sender": "them",
+    "text": "那个款项你考虑得怎么样",
+    "quote": ""
+   },
+   {
+    "side": "me",
+    "sender": "me",
+    "text": "我需要再确认一下",
+    "quote": ""
+   }
+  ],
+  "dropped": [
+   {
+    "region": "statusbar_nav_banner",
+    "text": "21:47"
+   },
+   {
+    "region": "statusbar_nav_banner",
+    "text": "5G •••86%"
+   },
+   {
+    "region": "statusbar_nav_banner",
+    "text": "对方正在输入.."
+   },
+   {
+    "region": "timesep_or_system",
+    "text": "以下是新消息"
+   },
+   {
+    "region": "timesep_or_system",
+    "text": "22:01"
+   },
+   {
+    "region": "inputbar",
+    "text": "输入消息."
+   }
+  ]
+ }
+}

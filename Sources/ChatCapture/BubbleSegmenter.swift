@@ -40,6 +40,23 @@ public enum BubbleSegmenter {
         return hs.isEmpty ? 1 : hs[hs.count / 2]
     }
 
+    /// Median advance over lines that are certainly conversation text (>= 4 characters).
+    ///
+    /// A font-size question ("is this line smaller than the body?") must not be answered with an
+    /// ink-height ratio against a global median: the same 12pt separator measured 0.73 of that
+    /// median under Windows OCR and 0.89 under Apple Vision after a font change, so a threshold on
+    /// it is a coin flip. Advance ratios between lines of one image are stable across both.
+    ///
+    /// The 75th percentile, not the median: a screen with one or two body lines and several small
+    /// ones drags a median down far enough to unset the threshold it feeds (measured on a synthetic
+    /// three-line screen: median 40.0 against a divider at 34.2, i.e. 0.2px short of passing).
+    static func bodyAdvance(_ lines: [OcrLine]) -> Double {
+        let advs = lines.filter { TextMetrics.norm($0.text).count >= 4 }
+            .map { TextMetrics.advance($0) }.sorted()
+        guard !advs.isEmpty else { return 0 }
+        return advs[min(advs.count - 1, Int((0.75 * Double(advs.count - 1)).rounded()))]
+    }
+
     // MARK: - Open bubble (mutable while lines are being attached)
 
     private struct Partial {
@@ -69,6 +86,10 @@ public enum BubbleSegmenter {
         var kept: [OcrLine] = []
         guard !sorted.isEmpty else { return SegmentResult(bubbles: [], dropped: dropped) }
         var medH = medianHeight(sorted)
+        // Body text advance: the median advance over lines that are certainly conversation text
+        // (>= 4 characters). Used to answer "is this line set smaller than the conversation?"
+        // without trusting an ink-height ratio, which is a function of the recogniser and the font.
+        let bodyAdv = bodyAdvance(sorted)
 
         for ln in sorted {
             let cx = ln.x + ln.w / 2
@@ -88,8 +109,21 @@ public enum BubbleSegmenter {
             if cy > H - 0.235 * W {
                 dropped.append(DroppedLine(region: "inputbar", text: ln.text)); continue
             }
-            // R2 — centred and small: "21:38" timestamp or "以下是新消息" system notice.
-            if abs(cx - W / 2) < 0.08 * W && ln.w < 0.6 * W && ln.h <= 0.85 * medH {
+            // R2 — centred SYSTEM lines: "21:38" timestamp, "以下是新消息" notice, "撤回了一条消息".
+            // Three conditions, each measured, all three needed:
+            //  · centred within 0.02*W — genuine centred lines sit within 0.0021*W of the screen
+            //    centre, while the closest small line INSIDE a bubble (a quote block, a voice
+            //    transcript) sits at 0.0479*W. 23x of gap.
+            //  · narrower than 0.45*W — a rail-anchored line wider than that can put its ink centre
+            //    near the middle by coincidence (a 0.52*W left bubble measures 0.44*W).
+            //  · set smaller than the conversation, as an ADVANCE ratio and never an ink-height
+            //    ratio (the height ratio against a global median flipped 0.73 -> 0.89 across a font
+            //    change, which is how a divider grew into a bubble).
+            // The third condition is not redundant with the first: a NARROW line inside a
+            // right-aligned bubble floats off the rails, and "我今天下午六点前发您" in s08 sits at
+            // 0.0021*W off centre with a 0.42*W box — geometry alone would delete a real message.
+            if abs(cx - W / 2) < 0.02 * W && ln.w < 0.45 * W
+                && bodyAdv > 0 && TextMetrics.advance(ln) < 0.85 * bodyAdv {
                 dropped.append(DroppedLine(region: "timesep_or_system", text: ln.text)); continue
             }
             // R3 — icon/badge artwork read as text. A single CJK character is a real message
@@ -107,16 +141,20 @@ public enum BubbleSegmenter {
         medH = medianHeight(kept)
 
         // R4 — sender name labels in group chats.
-        // The advance margin is the only thing separating an 11pt name label from a 14pt card
-        // title sitting over a 15pt amount: measured labels 0.74–0.85, that card title 0.93.
+        // Size comparison is a RATIO OF INK HEIGHTS WITHIN THIS ONE IMAGE: an 11pt label over 16pt
+        // body measures 0.66 under BOTH Windows OCR and Apple Vision, while the advance ratio for
+        // the same label drifted 0.79 -> 0.885 across that same font change and crossed a 0.88
+        // threshold. The card title this must not swallow (14pt over a 15pt amount) sits at 0.93.
+        // The x tolerance is the bubble's own left padding, which the label sits outside of: the
+        // same label measured 29px from the bubble on one renderer and 48px on the other.
         var labels: [Int: String] = [:]
         var used = Set<Int>()
         if kept.count >= 2 {
             for i in 0..<(kept.count - 1) {
                 let ln = kept[i], nxt = kept[i + 1]
                 let gap = nxt.y - (ln.y + ln.h)
-                if TextMetrics.advance(ln) < 0.88 * TextMetrics.advance(nxt)
-                    && abs(ln.x - nxt.x) < 0.04 * W
+                if ln.h < 0.85 * nxt.h
+                    && abs(ln.x - nxt.x) < 0.07 * W
                     && gap >= 0 && gap < 1.45 * medH
                     && (ln.x + ln.w / 2) < W / 2
                     && ln.w < 0.4 * W

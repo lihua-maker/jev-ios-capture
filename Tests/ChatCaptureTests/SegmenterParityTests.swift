@@ -2,9 +2,11 @@ import XCTest
 @testable import ChatCapture
 
 /// Parity tests: the Swift segmenter must reproduce the validated Python reference EXACTLY on the
-/// same line boxes. Fixtures come from `make_fixtures.py` — 12 screenshots through each of two
-/// recognisers (Apple Vision, Windows OCR) plus the 1x capture where avatar artwork really was
-/// recognised as text — so a port bug cannot hide behind "the engine behaves differently".
+/// same line boxes. Fixtures come from `make_fixtures.py` — 12 screenshots through each of three
+/// font/recogniser combinations (Apple Vision over Windows-rendered PNGs, Apple Vision over
+/// macOS-rendered PNGs i.e. PingFang SC, Windows OCR in Microsoft YaHei) plus the 1x capture where
+/// artwork really was recognised as text — so a port bug cannot hide behind "the engine or the font
+/// behaves differently".
 ///
 /// The rule tests below were written by running the reference implementation on the same inputs
 /// first; every expected value here is measured output, not intuition.
@@ -75,12 +77,46 @@ final class SegmenterParityTests: XCTestCase {
             }
             checked += 1
         }
-        XCTAssertEqual(engines, ["vision", "windows", "windows1x"],
-                       "every recogniser capture must be covered")
+        XCTAssertEqual(engines, ["vision", "visionmac", "windows", "windows1x"],
+                       "every font/recogniser combination must be covered")
         print("parity OK: \(checked) fixtures across \(engines.sorted())")
     }
 
     // MARK: - The rules this port exists for
+
+    /// R2 — the system-line filter needs all three conditions, and the third one is not decoration.
+    ///
+    /// A real "21:38" divider is centred to within 0.0021*W of the screen centre, while the closest
+    /// small line INSIDE a bubble (a quote block, a voice transcript) sits at 0.0479*W. Size alone
+    /// cannot decide this: the ink-height ratio against a global median flipped 0.73 -> 0.89 when
+    /// the same HTML was rendered in PingFang SC instead of Microsoft YaHei, and a divider grew
+    /// into a bubble. Geometry alone cannot decide it either — see the test below.
+    func testSystemLineFilterSeparatesDividersFromSmallTextInsideBubbles() {
+        let result = BubbleSegmenter.segment(OcrDocument(width: 1170, height: 2532, lines: [
+            line("那个款项你考虑得怎么样", 214, 545, 541, 59),        // body, sets the body advance
+            line("以下是新消息", 482, 780, 205, 45),                  // 12pt, dead centre
+            line("转文字：明天记得把合同带过来", 214, 900, 560, 45),   // 12pt, inside a bubble
+        ]))
+        XCTAssertEqual(result.dropped.map { $0.region }, ["timesep_or_system"])
+        XCTAssertEqual(result.dropped.first?.text, "以下是新消息")
+        XCTAssertTrue(result.bubbles.contains { $0.text.contains("转文字") },
+                      "small text inside a bubble is conversation, not chrome")
+    }
+
+    /// R2 again — the case that rules out a pure-geometry filter.
+    ///
+    /// In a right-aligned bubble whose lines differ in width, the narrower lines float off the
+    /// right rail, so a real message line can land on the screen centre: s08's
+    /// "我今天下午六点前发您" measures 0.0017*W off centre with a 0.42*W box. Only the advance
+    /// condition keeps it, because it is set at body size.
+    func testNarrowBodyLineInARightAlignedBubbleIsNotASystemLine() {
+        let result = BubbleSegmenter.segment(OcrDocument(width: 1170, height: 2532, lines: [
+            line("那个款项你考虑得怎么样", 214, 545, 541, 59),
+            line("我今天下午六点前发您", 341, 900, 492, 59),
+        ]))
+        XCTAssertTrue(result.dropped.isEmpty, "a body-sized line is never a system line")
+        XCTAssertEqual(result.bubbles.count, 2)
+    }
 
     /// R3 — a lone CJK character is a message, not icon artwork.
     func testSingleCharacterMessageSurvivesTheHallucinationFilter() {
