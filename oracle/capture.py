@@ -164,7 +164,22 @@ def segment(doc):
 
     for i, ln in enumerate(kept):
         if i in used: continue
-        side = "them" if (ln["x"] + ln["w"] / 2) < W / 2 else "me"
+        cx = ln["x"] + ln["w"] / 2
+        side = "them" if cx < W / 2 else "me"
+        # A WRAPPED CONTINUATION LINE of a right-aligned bubble can put its ink centre left of the
+        # screen centre: the bubble is right-anchored, so a last line that wrapped short is inset on
+        # the right and its centre drifts left (measured at 14px body: a 462px line inside a 629px
+        # bubble centres at 0.036*W left of the middle and was attributed to the other person, which
+        # is the error that makes the model describe the user's own words as the counterparty's).
+        # Inherit the open bubble's side when the line is BOTH ambiguous about the centre AND
+        # horizontally co-extensive with what is already open. Both conditions are needed: a genuine
+        # wide bubble on the other side is near the centre too, but overlaps the open one by only
+        # ~0.55 of its width, while a continuation line overlaps by ~1.0.
+        if (cur and cur["side"] == "me" and abs(cx - W / 2) < 0.09 * W
+                        and (ln["y"] - (cur["y0"] + cur["h0"])) < 0.95 * med_h):
+                ov = min(cur["x1"], ln["x"] + ln["w"]) - max(cur["x0"], ln["x"])
+                if ov > 0.75 * min(cur["w"], ln["w"]):
+                    side = cur["side"]
         if cur and cur["side"] == side:
             gap = ln["y"] - (cur["y0"] + cur["h0"])
             xov = min(cur["x1"], ln["x"] + ln["w"]) - max(cur["x0"], ln["x"])

@@ -182,7 +182,25 @@ public enum BubbleSegmenter {
         // R5/R5b — cluster lines into bubbles. The open bubble is always the last one appended.
         var bubbles: [Partial] = []
         for (i, ln) in kept.enumerated() where !used.contains(i) {
-            let side: Side = (ln.x + ln.w / 2) < W / 2 ? .them : .me
+            let cx = ln.x + ln.w / 2
+            var side: Side = cx < W / 2 ? .them : .me
+            // A WRAPPED CONTINUATION LINE of a right-aligned bubble can put its ink centre left of
+            // the screen centre: the bubble is right-anchored, so a last line that wrapped short is
+            // inset on the right and its centre drifts left (measured at 14px body: a 462px line
+            // inside a 629px bubble centres at 0.036*W left of the middle and was attributed to the
+            // other person — the error that makes the model describe the user's own words as the
+            // counterparty's). Three conditions, all measured:
+            //  · only for an open RIGHT-anchored bubble — a left bubble's inner lines all start at
+            //    the left rail, so they are never ambiguous;
+            //  · the vertical gap must sit in the line-leading cluster (intra-bubble gaps measure
+            //    <= 0.88 * medH, gaps between two bubbles >= 1.03 * medH over 48 images);
+            //  · the line must be horizontally co-extensive with what is already open (a genuine
+            //    bubble on the other side overlaps by ~0.55 of its width, a continuation by ~1.0).
+            if let cur = bubbles.last, cur.side == .me, abs(cx - W / 2) < 0.09 * W,
+               ln.y - (cur.y0 + cur.h0) < 0.95 * medH {
+                let ov = min(cur.x1, ln.x + ln.w) - max(cur.x0, ln.x)
+                if ov > 0.75 * min(cur.w, ln.w) { side = .me }
+            }
             if !bubbles.isEmpty, bubbles[bubbles.count - 1].side == side {
                 var c = bubbles[bubbles.count - 1]
                 let gap = ln.y - (c.y0 + c.h0)

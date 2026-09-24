@@ -87,6 +87,9 @@ def main() -> None:
     ap.add_argument("--out", default="/tmp/corpus_macos", help="where PNGs and .ocr.json go")
     ap.add_argument("--visionlines", default=".build/release/visionlines")
     ap.add_argument("--only", nargs="*", help="scenario ids")
+    # What an accessibility text-size setting does to the app: the body font size changes and every
+    # bubble reflows. The rules are metric-driven, so this is a behavioural change too.
+    ap.add_argument("--font-px", type=int, default=16, help="body font size to render at (default 16)")
     args = ap.parse_args()
 
     out_dir = Path(args.out)
@@ -101,6 +104,8 @@ def main() -> None:
         if args.only and sc["id"] not in args.only:
             continue
         html_text, _gt = corpus.build_html(sc)
+        if args.font_px != 16:
+            html_text = html_text.replace("font-size:16px", f"font-size:{args.font_px}px")
         html = out_dir / f"{sc['id']}.html"
         png = out_dir / f"{sc['id']}.png"
         html.write_text(html_text, encoding="utf-8")

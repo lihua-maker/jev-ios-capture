@@ -118,6 +118,23 @@ final class SegmenterParityTests: XCTestCase {
         XCTAssertEqual(result.bubbles.count, 2)
     }
 
+    /// R5c — a wrapped continuation line of a RIGHT-anchored bubble is not the other person.
+    ///
+    /// The bubble is right-anchored, so a last line that wrapped short is inset on the right and its
+    /// ink centre drifts left of the screen centre: measured 0.036*W left of the middle at 14px body.
+    /// Attributing it to the counterparty is the error that makes the model describe the user's own
+    /// words as someone else's, so the clustering inherits the open bubble's side for such a line.
+    func testWrappedContinuationLineStaysWithTheUser() {
+        let result = BubbleSegmenter.segment(OcrDocument(width: 1170, height: 2532, lines: [
+            line("好的王姐，我今天下班前改完发", 312, 678, 587, 41),
+            line("您，另外付款条款那部分我想跟您", 313, 738, 629, 41),
+            line("确认一下时间节点的口径", 312, 799, 462, 41),   // centre 543: left of 585
+        ]))
+        XCTAssertEqual(result.bubbles.count, 1, "one wrapped message, not a message plus a fragment")
+        XCTAssertEqual(result.bubbles.first?.side, .me)
+        XCTAssertEqual(result.bubbles.first?.text, "好的王姐，我今天下班前改完发您，另外付款条款那部分我想跟您确认一下时间节点的口径")
+    }
+
     /// R3 — a lone CJK character is a message, not icon artwork.
     func testSingleCharacterMessageSurvivesTheHallucinationFilter() {
         let result = BubbleSegmenter.segment(OcrDocument(width: 1170, height: 2532, lines: [

@@ -46,6 +46,20 @@ jobs:
           grep -q "pipeline-pass 12/12" "$RUNNER_TEMP/score.log" \
             || { echo "::error::renderer/font parity regressed — see the table above"; exit 1; }
 
+      - name: Report the accessibility text-size variants
+        # Reported, not gated: the body font size changes every metric the rules key off, and the
+        # current numbers (10/12 at 14px and 18px, the remainder being single-character bubbles the
+        # recogniser misses at those sizes) are a measurement to keep visible, not a pass/fail.
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          for px in 14 18; do
+            echo "=== body font ${px}px"
+            python3 oracle/render_parity.py --out "$RUNNER_TEMP/text$px" --font-px "$px" \
+              --visionlines .build/release/visionlines 2>&1 | tail -3
+            python3 oracle/run_corpus.py --ocr-files "$RUNNER_TEMP/text$px" 2>&1 | tail -1
+          done
+
       - name: Keep the renders and the reports
         if: always()
         uses: actions/upload-artifact@v4
