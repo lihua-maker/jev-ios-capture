@@ -26,6 +26,12 @@ settings:
     ENABLE_USER_SCRIPT_SANDBOXING: NO
     SWIFT_STRICT_CONCURRENCY: minimal
 
+# Identity and signing live in one editable file: set DEVELOPMENT_TEAM there and the project is
+# ready for a device. See docs/RUN_ON_DEVICE.md.
+configFiles:
+  Debug: Config/Signing.xcconfig
+  Release: Config/Signing.xcconfig
+
 targets:
 
   JevCopilot:

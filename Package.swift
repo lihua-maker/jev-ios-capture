@@ -16,8 +16,11 @@ let package = Package(
         .target(name: "JudgeClient", path: "Sources/JudgeClient"),
         // App-level composition: settings + keychain + local knowledge + the analysis handoff.
         // Platform-neutral (takes a CGImage), so it is testable on a macOS runner.
+        // The bundled self-test resources (a native 3x corpus render + its recorded expected output)
+        // let an installed app answer "does the pipeline work on THIS device" without screenshots.
         .target(name: "CopilotKit", dependencies: ["ChatCapture", "JudgeClient"],
-                path: "Sources/CopilotKit"),
+                path: "Sources/CopilotKit",
+                resources: [.copy("Resources/selftest")]),
         // Measurement harness (macOS only): Apple's recogniser over a folder of screenshots.
         .executableTarget(name: "visionlines", dependencies: ["ChatCapture"],
                           path: "Sources/visionlines"),

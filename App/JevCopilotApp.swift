@@ -11,6 +11,7 @@ struct JevCopilotApp: App {
                 AnalysisView().tabItem { Label("分析", systemImage: "text.bubble") }
                 SettingsView().tabItem { Label("接口", systemImage: "slider.horizontal.3") }
                 KnowledgeView().tabItem { Label("知识库", systemImage: "person.crop.rectangle.stack") }
+                SelfTestView().tabItem { Label("自检", systemImage: "checkmark.seal") }
             }
             .environmentObject(model)
         }

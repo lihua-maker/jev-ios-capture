@@ -47,6 +47,12 @@ final class AppModel: ObservableObject {
 
     // MARK: analysis
 
+    /// Runs the on-device self-test: a bundled corpus screenshot plus the output recorded for it,
+    /// so an install can be verified without sending any screenshot of a real conversation.
+    func selfTest(screen: String) async -> SelfTestReport {
+        await SelfTest.run(settings: settings, screen: screen, transport: transport)
+    }
+
     func analyze(image: UIImage, contactName: String? = nil) async {
         guard let cgImage = image.cgImage else {
             phase = .failed("这张图读不出来")

@@ -208,6 +208,38 @@ final class CopilotSettingsTests: XCTestCase {
 
 // MARK: - analysis handoff
 
+final class SelfTestTests: XCTestCase {
+
+    /// The fixture that ships INSIDE the app must compare clean against the ported rules — this is
+    /// the assertion an installed build makes on the phone, so CI has to make it too.
+    func testBundledSelfTestFixtureMatchesTheSegmenter() throws {
+        let fixture = try XCTUnwrap(SelfTest.loadFixture(), "bundled fixture resource missing")
+        XCTAssertEqual(fixture.bubbles.count, 4)
+        let result = BubbleSegmenter.segment(
+            OcrDocument(width: fixture.width, height: fixture.height, lines: fixture.lines))
+        XCTAssertTrue(SelfTest.compare(result, fixture).isEmpty,
+                      "shipped fixture disagrees with the ported rules: "
+                      + SelfTest.compare(result, fixture).joined(separator: " / "))
+    }
+
+    /// Both bundled resources must exist, or the on-device self-test reports a false failure.
+    func testBundledResourcesArePresent() {
+        XCTAssertNotNil(SelfTest.resourceURL("corpus", "png"), "corpus screenshot missing")
+        XCTAssertNotNil(SelfTest.resourceURL("expected", "json"), "expected output missing")
+    }
+
+    /// The comparison must actually be able to fail.
+    func testComparisonReportsDisagreement() throws {
+        let fixture = try XCTUnwrap(SelfTest.loadFixture())
+        let mutated = SelfTest.Fixture(width: fixture.width, height: fixture.height, lines: fixture.lines,
+                                       bubbles: [(.them, "them", "something else", "")],
+                                       dropped: [])
+        let result = BubbleSegmenter.segment(
+            OcrDocument(width: fixture.width, height: fixture.height, lines: fixture.lines))
+        XCTAssertFalse(SelfTest.compare(result, mutated).isEmpty)
+    }
+}
+
 final class AnalysisStoreTests: XCTestCase {
     private func store() -> AnalysisStore {
         let url = tempURL("latest-analysis.json")

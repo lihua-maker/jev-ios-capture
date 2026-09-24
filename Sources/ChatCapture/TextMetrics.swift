@@ -36,6 +36,29 @@ enum TextMetrics {
         ln.w / weight(ln.text)
     }
 
+    /// Character-level agreement between two strings, 1.0 for identical.
+    static func similarity(_ a: String, _ b: String) -> Double {
+        let x = Array(norm(a)), y = Array(norm(b))
+        if x.isEmpty && y.isEmpty { return 1 }
+        if x.isEmpty || y.isEmpty { return 0 }
+        return 1 - Double(levenshtein(x, y)) / Double(max(x.count, y.count))
+    }
+
+    static func levenshtein(_ a: [Character], _ b: [Character]) -> Int {
+        if a.isEmpty { return b.count }
+        if b.isEmpty { return a.count }
+        var prev = Array(0...b.count)
+        var cur = [Int](repeating: 0, count: b.count + 1)
+        for i in 1...a.count {
+            cur[0] = i
+            for j in 1...b.count {
+                cur[j] = min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] == b[j - 1] ? 0 : 1))
+            }
+            prev = cur
+        }
+        return prev[b.count]
+    }
+
     /// True when every character is icon artwork rather than text ("0", "·", "]" …).
     static func isGlyphish(_ normalized: String) -> Bool {
         !normalized.isEmpty && normalized.allSatisfy { glyphs.contains($0) }

@@ -1,0 +1,20 @@
+// Signing and identity. Everything a Mac has to know lives in this one file — set YOUR_TEAM_ID and
+// you are done; nothing else in the project needs editing to build for a device.
+//
+// Find your team id: `security find-identity -v -p codesigning` on the Mac prints it in the
+// certificate name ("Apple Development: you@example.com (ABCDE12345)") — the parenthesised part.
+// A free personal team works; it just re-signs every 7 days, and it may not be able to create the
+// App Group (see docs/RUN_ON_DEVICE.md for that one case).
+
+DEVELOPMENT_TEAM = YOUR_TEAM_ID
+
+// Automatic signing keeps the Mac from needing hand-made provisioning profiles.
+CODE_SIGN_STYLE = Automatic
+
+// Bundle identifiers are also set in project.yml. They are repeated here so a fork can rename the
+// app without touching the spec: the keyboard's id MUST stay prefixed with the app's.
+APP_BUNDLE_ID = ai.jevcopilot.app
+KEYBOARD_BUNDLE_ID = ai.jevcopilot.app.keyboard
+
+// The App Group the app and the keyboard share the latest analysis through.
+APP_GROUP_ID = group.ai.jevcopilot
