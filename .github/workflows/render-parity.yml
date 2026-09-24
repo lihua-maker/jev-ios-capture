@@ -57,7 +57,8 @@ jobs:
             echo "=== body font ${px}px"
             python3 oracle/render_parity.py --out "$RUNNER_TEMP/text$px" --font-px "$px" \
               --visionlines .build/release/visionlines 2>&1 | tail -3
-            python3 oracle/run_corpus.py --ocr-files "$RUNNER_TEMP/text$px" 2>&1 | tail -1
+            python3 oracle/run_corpus.py --ocr-files "$RUNNER_TEMP/text$px" 2>&1 \
+              | tee "$RUNNER_TEMP/score_text$px.log" | grep -E "^(FAIL|pipeline-pass)" | tail -6
           done
 
       - name: Keep the renders and the reports
