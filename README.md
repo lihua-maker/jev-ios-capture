@@ -122,10 +122,17 @@ the scam transcript must come back `intent = scam` with `danger >= 2.5`, the bou
 reply must outrank the one that pays up, and an ordinary work chat must not be flagged. Add the
 key as a repository secret and they run in CI instead of skipping.
 
-| | pipeline-pass | fully clean |
+| corpus | pipeline-pass | fully clean |
 |---|---|---|
-| Apple Vision | 12/12 | 12/12 |
-| Windows OCR baseline | 12/12 | 10/12 |
+| Apple Vision, PingFang SC, default text size | 12/12 | 12/12 |
+| Apple Vision, PingFang SC, 14px body | 12/12 | 12/12 |
+| Apple Vision, PingFang SC, 18px body | 12/12 | 12/12 |
+| Windows OCR, Microsoft YaHei | 12/12 | 10/12 |
+
+Non-pristine inputs, same evaluator: a 1080-wide re-compressed JPEG (what a forwarded screenshot
+looks like) passes 12/12, at the native size with JPEG q60 it drops to 8/12, and at 750 wide 10/12.
+Those losses are RECOGNITION, not segmentation — the geometry rules are ratios, which is why
+scaling survives them and a font substitution does not.
 
 Rules that exist because of a measured failure — full reasoning in the spike workspace's
 `PORT_SPEC.md`:
