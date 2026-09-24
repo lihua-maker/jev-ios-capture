@@ -1,0 +1,190 @@
+[
+  {
+    "bubbles": 4,
+    "expected": 4,
+    "effective": 4,
+    "count_ok": true,
+    "sender_ok": "4/4",
+    "sender_labels": null,
+    "char_accuracy": 1.0,
+    "mean_sim": 1.0,
+    "quote_sim": null,
+    "chrome_leaks": 0,
+    "icon_hallucinations": 0,
+    "recall_misses": [],
+    "dropped": [
+      [
+        "statusbar_nav_banner",
+        "21：47"
+      ],
+      [
+        "statusbar_nav_banner",
+        "5G．．．86％"
+      ],
+      [
+        "statusbar_nav_banner",
+        "李经理"
+      ],
+      [
+        "timesep_or_system",
+        "21：38"
+      ],
+      [
+        "inputbar",
+        "输入消息··"
+      ]
+    ],
+    "detected": [
+      {
+        "sender": "them",
+        "text": "小陈，在吗？",
+        "quote": ""
+      },
+      {
+        "sender": "them",
+        "text": "有个急事，今晚必须处理完",
+        "quote": ""
+      },
+      {
+        "sender": "me",
+        "text": "李经理您好，具体是什么事？",
+        "quote": ""
+      },
+      {
+        "sender": "them",
+        "text": "你手上的活先放一放",
+        "quote": ""
+      }
+    ],
+    "fails": [],
+    "deltas": [],
+    "ok": true,
+    "clean": true,
+    "id": "s01_1v1_light_short",
+    "size": "1170x2532",
+    "skin": "wechat_light",
+    "gt_bubbles": 4,
+    "gt_no_text": 0
+  },
+  {
+    "bubbles": 4,
+    "expected": 4,
+    "effective": 4,
+    "count_ok": true,
+    "sender_ok": "4/4",
+    "sender_labels": "0/2",
+    "char_accuracy": 1.0,
+    "mean_sim": 1.0,
+    "quote_sim": null,
+    "chrome_leaks": 0,
+    "icon_hallucinations": 0,
+    "recall_misses": [],
+    "dropped": [
+      [
+        "statusbar_nav_banner",
+        "21：47"
+      ],
+      [
+        "statusbar_nav_banner",
+        "5G．．．86％"
+      ],
+      [
+        "statusbar_nav_banner",
+        "家人群（5）"
+      ],
+      [
+        "inputbar",
+        "输入消息··"
+      ]
+    ],
+    "detected": [
+      {
+        "sender": "them",
+        "text": "明天回来吃饭吗",
+        "quote": ""
+      },
+      {
+        "sender": "me",
+        "text": "回，下午到",
+        "quote": ""
+      },
+      {
+        "sender": "them",
+        "text": "我给你留了车位",
+        "quote": ""
+      },
+      {
+        "sender": "me",
+        "text": "谢谢爸",
+        "quote": ""
+      }
+    ],
+    "fails": [],
+    "deltas": [],
+    "ok": true,
+    "clean": true,
+    "id": "s11_narrow_dark_group",
+    "size": "1125x2436",
+    "skin": "wechat_dark",
+    "gt_bubbles": 4,
+    "gt_no_text": 0
+  },
+  {
+    "bubbles": 2,
+    "expected": 3,
+    "effective": 2,
+    "count_ok": true,
+    "sender_ok": "2/2",
+    "sender_labels": null,
+    "char_accuracy": 1.0,
+    "mean_sim": 1.0,
+    "quote_sim": null,
+    "chrome_leaks": 0,
+    "icon_hallucinations": 0,
+    "recall_misses": [
+      {
+        "sender": "them",
+        "gt": "行"
+      }
+    ],
+    "dropped": [
+      [
+        "statusbar_nav_banner",
+        "21：47"
+      ],
+      [
+        "statusbar_nav_banner",
+        "5G．．．86％"
+      ],
+      [
+        "statusbar_nav_banner",
+        "赵工"
+      ],
+      [
+        "inputbar",
+        "输入消息··"
+      ]
+    ],
+    "detected": [
+      {
+        "sender": "them",
+        "text": "生产环境的告警我看了，是订单服务的连接池被打满了，我先把最大连接数调高临时顶一下，明天再查泄漏点",
+        "quote": ""
+      },
+      {
+        "sender": "me",
+        "text": "好，那我把监控面板的阈值也调一下，免得半夜又告警",
+        "quote": ""
+      }
+    ],
+    "fails": [],
+    "deltas": [],
+    "ok": true,
+    "clean": false,
+    "id": "s12_wide_light_long",
+    "size": "1290x2796",
+    "skin": "wechat_light",
+    "gt_bubbles": 3,
+    "gt_no_text": 0
+  }
+]
