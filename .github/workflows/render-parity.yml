@@ -1,0 +1,60 @@
+name: render-parity
+
+# The rules are driven by text metrics, and text metrics are font metrics. The reference corpus is
+# rendered on Windows in Microsoft YaHei; an iPhone renders in PingFang SC. This job re-renders the
+# SAME html with the platform's own font, recognises it with Apple Vision, and scores it with the
+# same evaluator against the same ground truth — a font-shaped bug fails here instead of on a phone.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths: [ 'oracle/**', 'corpus_html/**', 'Sources/ChatCapture/**', '.github/workflows/render-parity.yml' ]
+
+jobs:
+  font-and-renderer-parity:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Toolchain
+        run: swift --version && python3 --version
+
+      - name: Ensure Chrome is available
+        run: |
+          CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+          if [ ! -x "$CHROME" ]; then brew install --cask google-chrome; fi
+          "$CHROME" --version
+
+      - name: Build the recogniser CLI
+        run: |
+          set -o pipefail
+          swift build -c release --product visionlines 2>&1 | tail -5
+          ls -l .build/release/visionlines
+
+      - name: Render the corpus with this machine's fonts
+        run: |
+          set -o pipefail
+          python3 oracle/render_macos.py --out "$RUNNER_TEMP/renders" \
+            --visionlines .build/release/visionlines 2>&1 | tee "$RUNNER_TEMP/render.log"
+
+      - name: Score the renders against the ground truth
+        run: |
+          set -o pipefail
+          python3 oracle/run_corpus.py --ocr-files "$RUNNER_TEMP/renders" 2>&1 | tee "$RUNNER_TEMP/score.log"
+          # Acceptance gate: the same rules must still reconstruct every conversation.
+          grep -q "pipeline-pass 12/12" "$RUNNER_TEMP/score.log" \
+            || { echo "::error::renderer/font parity regressed — see the table above"; exit 1; }
+
+      - name: Keep the renders and the reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: render-parity
+          path: |
+            ${{ runner.temp }}/renders/*.png
+            ${{ runner.temp }}/renders/metrics.json
+            ${{ runner.temp }}/render.log
+            ${{ runner.temp }}/score.log
+            oracle/corpus_report_renders.json
+          if-no-files-found: warn

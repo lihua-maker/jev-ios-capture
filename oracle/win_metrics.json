@@ -1,0 +1,74 @@
+{
+  "s01_1v1_light_short": {
+    "size": "1170x2532",
+    "median_step": 42.1,
+    "median_h": 47,
+    "bubbles": 3
+  },
+  "s02_1v1_light_wrapped": {
+    "size": "1170x2532",
+    "median_step": 46.5,
+    "median_h": 47,
+    "bubbles": 3
+  },
+  "s03_group_light": {
+    "size": "1170x2532",
+    "median_step": 44.6,
+    "median_h": 45.0,
+    "bubbles": 3
+  },
+  "s04_1v1_dark": {
+    "size": "1170x2532",
+    "median_step": 42.8,
+    "median_h": 47.5,
+    "bubbles": 3
+  },
+  "s05_qq_light": {
+    "size": "1170x2532",
+    "median_step": 44.1,
+    "median_h": 47,
+    "bubbles": 3
+  },
+  "s06_cards_transfer": {
+    "size": "1170x2532",
+    "median_step": 40.5,
+    "median_h": 41,
+    "bubbles": 3
+  },
+  "s07_media_mixed": {
+    "size": "1170x2532",
+    "median_step": 39.2,
+    "median_h": 43.0,
+    "bubbles": 3
+  },
+  "s08_quoted_reply": {
+    "size": "1170x2532",
+    "median_step": 39.8,
+    "median_h": 47,
+    "bubbles": 3
+  },
+  "s09_banner_and_badge": {
+    "size": "1170x2532",
+    "median_step": 39.2,
+    "median_h": 41.5,
+    "bubbles": 3
+  },
+  "s10_typing_indicator": {
+    "size": "1170x2532",
+    "median_step": 39.8,
+    "median_h": 39.0,
+    "bubbles": 3
+  },
+  "s11_narrow_dark_group": {
+    "size": "1125x2436",
+    "median_step": 40.6,
+    "median_h": 46.5,
+    "bubbles": 3
+  },
+  "s12_wide_light_long": {
+    "size": "1290x2796",
+    "median_step": 47.9,
+    "median_h": 47.0,
+    "bubbles": 3
+  }
+}
