@@ -135,6 +135,35 @@ final class SegmenterParityTests: XCTestCase {
         XCTAssertEqual(result.bubbles.first?.text, "好的王姐，我今天下班前改完发您，另外付款条款那部分我想跟您确认一下时间节点的口径")
     }
 
+    /// R2 — the size threshold that separates body text from secondary text must FOLLOW the body
+    /// size, not sit at a constant.
+    ///
+    /// 0.85 assumes secondary text is at least 15% smaller than body, which is only true at the
+    /// default type size. A 12px timestamp over a 14px body measures 0.857 and escaped: at a 14px or
+    /// 18px body font the corpus leaked a chrome line into the transcript (s04, s08) and lost a
+    /// quote block, with the device's recogniser. The threshold is now the midpoint between the
+    /// measured body size (recovered as advance/W, which is scale-invariant) and the 12px secondary
+    /// size the apps use.
+    func testSecondarySizeThresholdFollowsTheBodySize() {
+        XCTAssertEqual(BubbleSegmenter.secondaryThreshold(48, 1170), 0.875, accuracy: 0.005)
+        XCTAssertEqual(BubbleSegmenter.secondaryThreshold(42, 1170), 0.929, accuracy: 0.005)
+        XCTAssertEqual(BubbleSegmenter.secondaryThreshold(54, 1170), 0.833, accuracy: 0.005)
+    }
+
+    /// R2 again — at a 14px body, a 12px centred timestamp is still chrome, and the small text
+    /// INSIDE a bubble at 12px is still conversation. Both are 0.857 and 0.857 of the body advance.
+    func testSecondaryTextIsClassifiedByTheMeasuredBodySize() {
+        let result = BubbleSegmenter.segment(OcrDocument(width: 1170, height: 2532, lines: [
+            line("那个款项你考虑得怎么样", 214, 600, 462, 41),      // 14px body: 42px per character
+            line("21:38", 535.5, 500, 99, 30),                    // 12px, dead centre -> chrome
+            line("转文字：明天记得把合同带过来", 214, 700, 468, 41), // 12px, inside a bubble -> conversation
+        ]))
+        XCTAssertEqual(result.dropped.map { $0.region }, ["timesep_or_system"])
+        XCTAssertEqual(result.dropped.first?.text, "21:38")
+        XCTAssertEqual(result.bubbles.map { $0.text },
+                       ["那个款项你考虑得怎么样", "转文字：明天记得把合同带过来"])
+    }
+
     /// R3 — a lone CJK character is a message, not icon artwork.
     func testSingleCharacterMessageSurvivesTheHallucinationFilter() {
         let result = BubbleSegmenter.segment(OcrDocument(width: 1170, height: 2532, lines: [

@@ -57,6 +57,27 @@ def gap_threshold(gaps, med_h):
 def advance(ln):
     return ln["w"] / weight(ln["text"])
 
+def secondary_threshold(body_adv, W):
+    """Where to cut between body text and the apps' secondary text (timestamps, notices, quotes).
+
+    A constant 0.85 says "secondary text is at least 15% smaller than body", which only holds at the
+    default type size. It is false the moment the body shrinks: a 12px timestamp over a 14px body
+    measures 0.857 and escaped the filter, so "21:38" and quote blocks became messages at 14px.
+
+    The body size in CSS px is recoverable from the image — advance/W is scale-invariant, and this
+    codebase's chrome geometry already assumes the 390pt-wide reference device the 0.226*W band was
+    measured on — so the cut is placed at the MIDPOINT between the measured body size and the
+    secondary size the apps use (0.75 x the 16px default = 12px). At the default size that yields
+    ~0.89; at a 14px body ~0.93, which is what lets the 12px line be recognised as secondary again.
+    Clamped so a wrong body estimate can neither disable the rule nor swallow body text.
+    """
+    if not body_adv or not W:
+        return 0.85
+    body_px = body_adv * 390.0 / W
+    if body_px <= 1:
+        return 0.85
+    return min(0.93, max(0.80, (1.0 + 12.0 / body_px) / 2.0))
+
 def body_advance(lines):
     """Median advance of the lines that are certainly body text (>= 4 characters).
 
@@ -103,6 +124,7 @@ def segment(doc):
         return [], dropped, (W, H)
     med_h = sorted(l["h"] for l in lines)[len(lines) // 2]
     body_adv = body_advance(lines)
+    sec = secondary_threshold(body_adv, W)
 
     for ln in lines:
         cx, cy = ln["x"] + ln["w"] / 2, ln["y"] + ln["h"] / 2
@@ -125,7 +147,7 @@ def segment(doc):
         # bound excludes a wide wrapped bubble whose ink centre lands near the middle (a 0.52*W
         # left-anchored bubble measures 0.44*W); the advance is only a safety condition.
         if (abs(cx - W / 2) < 0.02 * W and ln["w"] < 0.45 * W
-                and body_adv and advance(ln) < 0.85 * body_adv):
+                and body_adv and advance(ln) < sec * body_adv):
             dropped.append(("timesep_or_system", t)); continue
         # icon/badge hallucination: glyph-shaped or a tiny box hugging the avatar column
         glyphish = tn and all(ch in GLYPHS for ch in tn)
@@ -149,7 +171,7 @@ def segment(doc):
         nxt = kept[i + 1]
         gap = nxt["y"] - (ln["y"] + ln["h"])
         if (ln["h"] < 0.85 * nxt["h"] and abs(ln["x"] - nxt["x"]) < 0.07 * W
-                and 0 <= gap < 1.45 * med_h and (ln["x"] + ln["w"] / 2) < W / 2
+                and gap > -0.35 * med_h and gap < 1.45 * med_h and (ln["x"] + ln["w"] / 2) < W / 2
                 and ln["w"] < 0.4 * W and len(norm(ln["text"])) <= 8):
             labels[i + 1] = ln["text"]; used.add(i)
     bubbles, cur = [], None
@@ -224,7 +246,8 @@ def segment(doc):
         multi = sorted(advance(l) for l in lines if len(norm(l["text"])) >= 2)
         body_adv = multi[len(multi) // 2] if multi else max(advance(l) for l in lines)
         small_idx = [i for i, l in enumerate(lines)
-                     if len(norm(l["text"])) >= 2 and advance(l) < 0.85 * body_adv]
+                     if len(norm(l["text"])) >= 2
+                     and advance(l) < secondary_threshold(body_adv, W) * body_adv]
         big_idx = [i for i in range(len(lines)) if i not in small_idx]
         # a secondary-font block counts as a quote only when it PRECEDES the body; a card footer
         # or a voice transcript AFTER the body is part of the body

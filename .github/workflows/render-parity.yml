@@ -69,6 +69,8 @@ jobs:
           path: |
             ${{ runner.temp }}/renders/*.png
             ${{ runner.temp }}/renders/*.ocr.json
+            ${{ runner.temp }}/text14/*.ocr.json
+            ${{ runner.temp }}/text18/*.ocr.json
             ${{ runner.temp }}/renders/metrics.json
             ${{ runner.temp }}/render.log
             ${{ runner.temp }}/score.log

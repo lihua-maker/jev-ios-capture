@@ -57,6 +57,22 @@ public enum BubbleSegmenter {
         return advs[min(advs.count - 1, Int((0.75 * Double(advs.count - 1)).rounded()))]
     }
 
+    /// Where to cut between body text and the apps' secondary text (timestamps, notices, quotes).
+    ///
+    /// A constant 0.85 says "secondary text is at least 15% smaller than body", which holds only at
+    /// the default type size. A 12px timestamp over a 14px body measures 0.857 and escapes it, so
+    /// "21:38" and quote blocks became messages. The body size in CSS px is recoverable from the
+    /// image (advance/W is scale-invariant, and the chrome geometry already assumes the 390pt-wide
+    /// reference device the 0.226*W band was measured on), so the cut sits at the MIDPOINT between
+    /// the measured body and the 12px secondary size the apps use: ~0.89 at the 16px default, ~0.93
+    /// at a 14px body. Clamped so a bad body estimate can neither disable nor overreach the rule.
+    static func secondaryThreshold(_ bodyAdv: Double, _ w: Double) -> Double {
+        guard bodyAdv > 0, w > 0 else { return 0.85 }
+        let bodyPx = bodyAdv * 390.0 / w
+        guard bodyPx > 1 else { return 0.85 }
+        return min(0.93, max(0.80, (1.0 + 12.0 / bodyPx) / 2.0))
+    }
+
     // MARK: - Open bubble (mutable while lines are being attached)
 
     private struct Partial {
@@ -123,7 +139,7 @@ public enum BubbleSegmenter {
             // right-aligned bubble floats off the rails, and "我今天下午六点前发您" in s08 sits at
             // 0.0021*W off centre with a 0.42*W box — geometry alone would delete a real message.
             if abs(cx - W / 2) < 0.02 * W && ln.w < 0.45 * W
-                && bodyAdv > 0 && TextMetrics.advance(ln) < 0.85 * bodyAdv {
+                && bodyAdv > 0 && TextMetrics.advance(ln) < secondaryThreshold(bodyAdv, W) * bodyAdv {
                 dropped.append(DroppedLine(region: "timesep_or_system", text: ln.text)); continue
             }
             // R3 — icon/badge artwork read as text. A single CJK character is a real message
@@ -155,7 +171,7 @@ public enum BubbleSegmenter {
                 let gap = nxt.y - (ln.y + ln.h)
                 if ln.h < 0.85 * nxt.h
                     && abs(ln.x - nxt.x) < 0.07 * W
-                    && gap >= 0 && gap < 1.45 * medH
+                    && gap > -0.35 * medH && gap < 1.45 * medH
                     && (ln.x + ln.w / 2) < W / 2
                     && ln.w < 0.4 * W
                     && TextMetrics.norm(ln.text).count <= 8 {
@@ -262,7 +278,8 @@ public enum BubbleSegmenter {
 
             var smallIdx: [Int] = []
             for (i, l) in lines.enumerated()
-            where TextMetrics.norm(l.text).count >= 2 && TextMetrics.advance(l) < 0.85 * bodyAdv {
+            where TextMetrics.norm(l.text).count >= 2
+                && TextMetrics.advance(l) < secondaryThreshold(bodyAdv, W) * bodyAdv {
                 smallIdx.append(i)
             }
             var bigIdx = Array(0..<lines.count).filter { !smallIdx.contains($0) }
