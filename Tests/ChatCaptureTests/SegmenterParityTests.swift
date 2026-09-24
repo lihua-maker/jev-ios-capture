@@ -77,7 +77,7 @@ final class SegmenterParityTests: XCTestCase {
             }
             checked += 1
         }
-        XCTAssertEqual(engines, ["vision", "visionmac", "windows", "windows1x"],
+        XCTAssertEqual(engines, ["vision", "visionmac", "visionmac14", "visionmac18", "windows", "windows1x"],
                        "every font/recogniser combination must be covered")
         print("parity OK: \(checked) fixtures across \(engines.sorted())")
     }
@@ -162,6 +162,21 @@ final class SegmenterParityTests: XCTestCase {
         XCTAssertEqual(result.dropped.first?.text, "21:38")
         XCTAssertEqual(result.bubbles.map { $0.text },
                        ["那个款项你考虑得怎么样", "转文字：明天记得把合同带过来"])
+    }
+
+    /// R1b — a sender label inside the top third, left of the banner cutoff, is not a banner.
+    ///
+    /// Banner text starts ~0.137*W and a sender label ~0.146*W: 1% apart in x, so the banner filter
+    /// can only avoid eating labels structurally. At an 18px body the label box drifted to x=171
+    /// against a 175.5 cutoff and two of three sender names in s03 were deleted as banners.
+    func testSenderLabelInTheTopThirdIsNotABanner() {
+        let result = BubbleSegmenter.segment(OcrDocument(width: 1170, height: 2532, lines: [
+            line("王姐", 171, 433, 83, 34),
+            line("今天的联调结果出来了", 214, 516, 551, 63),
+        ]))
+        XCTAssertTrue(result.dropped.isEmpty, "a label is not a notification banner")
+        XCTAssertEqual(result.bubbles.count, 1)
+        XCTAssertEqual(result.bubbles.first?.sender, "王姐")
     }
 
     /// R3 — a lone CJK character is a message, not icon artwork.

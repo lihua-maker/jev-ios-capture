@@ -73,6 +73,29 @@ public enum BubbleSegmenter {
         return min(0.93, max(0.80, (1.0 + 12.0 / bodyPx) / 2.0))
     }
 
+    /// The line after `ln` in the same reading order, or nil at the end.
+    static func nextLine(_ ln: OcrLine, _ lines: [OcrLine]) -> OcrLine? {
+        guard let i = lines.firstIndex(where: { $0 === ln }) else { return nil }
+        return i + 1 < lines.count ? lines[i + 1] : nil
+    }
+
+    /// Would this line be read as a group-chat sender label for the line below it?
+    ///
+    /// Asked BEFORE the banner filter, because a banner's text starts ~0.137*W and a sender label
+    /// ~0.146*W — 1% apart in x, so only the label's structure separates them. At an 18px body the
+    /// label box drifted to x=171 against a 175.5 cutoff and was deleted as a banner, taking two of
+    /// three sender names with it.
+    static func looksLikeLabel(_ ln: OcrLine, _ nxt: OcrLine?, _ w: Double, _ medH: Double) -> Bool {
+        guard let nxt else { return false }
+        let gap = nxt.y - (ln.y + ln.h)
+        return ln.h < 0.85 * nxt.h
+            && abs(ln.x - nxt.x) < 0.07 * w
+            && gap > -0.35 * medH && gap < 1.45 * medH
+            && (ln.x + ln.w / 2) < w / 2
+            && ln.w < 0.4 * w
+            && TextMetrics.norm(ln.text).count <= 8
+    }
+
     // MARK: - Open bubble (mutable while lines are being attached)
 
     private struct Partial {
@@ -118,7 +141,7 @@ public enum BubbleSegmenter {
             }
             // R1b — a notification banner insets its text left of the message rail (bubble ink
             // starts ~0.185*W, banner text ~0.137*W) and can sit below the nav band.
-            if cy < 0.30 * H && ln.x < 0.15 * W {
+            if cy < 0.30 * H && ln.x < 0.15 * W && !looksLikeLabel(ln, nextLine(ln, sorted), W, medH) {
                 dropped.append(DroppedLine(region: "banner_overlay", text: ln.text)); continue
             }
             // R1 — input bar + home-indicator safe area.
@@ -212,10 +235,10 @@ public enum BubbleSegmenter {
             //    <= 0.88 * medH, gaps between two bubbles >= 1.03 * medH over 48 images);
             //  · the line must be horizontally co-extensive with what is already open (a genuine
             //    bubble on the other side overlaps by ~0.55 of its width, a continuation by ~1.0).
-            if let cur = bubbles.last, cur.side == .me, abs(cx - W / 2) < 0.09 * W,
-               ln.y - (cur.y0 + cur.h0) < 0.95 * medH {
-                let ov = min(cur.x1, ln.x + ln.w) - max(cur.x0, ln.x)
-                if ov > 0.75 * min(cur.w, ln.w) { side = .me }
+            if let cur = bubbles.last, cur.side == .me, ln.y - (cur.y0 + cur.h0) < 0.95 * medH {
+                if abs(ln.x - cur.x0) < 0.03 * W || abs((ln.x + ln.w) - cur.x1) < 0.03 * W {
+                    side = .me
+                }
             }
             if !bubbles.isEmpty, bubbles[bubbles.count - 1].side == side {
                 var c = bubbles[bubbles.count - 1]
@@ -223,7 +246,10 @@ public enum BubbleSegmenter {
                 let xov = min(c.x1, ln.x + ln.w) - max(c.x0, ln.x)
                 // R5b — a card's icon indents its title, so its footer line both starts further
                 // left and sits further away than a normal line pitch.
-                let indented = (c.x0 - ln.x) > 0.04 * W
+                // A card footer is a bubble's inner layout, so the line must be on the message
+                // rail: at an 18px body Vision merged one message's box with the avatar column
+                // (x = 0, a two-line-tall box) and the branch swallowed the bubble above it.
+                let indented = (c.x0 - ln.x) > 0.04 * W && ln.x > 0.15 * W
                 if (gap < split || (indented && gap < 2.2 * medH)) && xov > -0.5 * min(c.w, ln.w) {
                     c.lines.append(ln)
                     c.y0 = ln.y

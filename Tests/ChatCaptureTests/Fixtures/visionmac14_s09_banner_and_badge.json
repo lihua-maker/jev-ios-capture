@@ -1,0 +1,95 @@
+{
+ "id": "s09_banner_and_badge",
+ "engine": "visionmac14",
+ "width": 1170,
+ "height": 2532,
+ "lines": [
+  {
+   "text": "21:47",
+   "x": 63.4,
+   "y": 48.7,
+   "w": 112.1,
+   "h": 44.3
+  },
+  {
+   "text": "5G •••86%",
+   "x": 838.4,
+   "y": 48.3,
+   "w": 268.3,
+   "h": 49.4
+  },
+  {
+   "text": "微信",
+   "x": 180.4,
+   "y": 189.9,
+   "w": 82.9,
+   "h": 44.1
+  },
+  {
+   "text": "王姐：合同改好了吗",
+   "x": 165.8,
+   "y": 243,
+   "w": 380.3,
+   "h": 44.3
+  },
+  {
+   "text": "在忙吗",
+   "x": 209.6,
+   "y": 340.8,
+   "w": 136.5,
+   "h": 49.2
+  },
+  {
+   "text": "在的，稍等我看一下",
+   "x": 565.5,
+   "y": 491.8,
+   "w": 390,
+   "h": 58.4
+  },
+  {
+   "text": "输入消息..",
+   "x": 68.1,
+   "y": 2424.1,
+   "w": 234.3,
+   "h": 50.3
+  }
+ ],
+ "expected": {
+  "bubbles": [
+   {
+    "side": "them",
+    "sender": "them",
+    "text": "在忙吗",
+    "quote": ""
+   },
+   {
+    "side": "me",
+    "sender": "me",
+    "text": "在的，稍等我看一下",
+    "quote": ""
+   }
+  ],
+  "dropped": [
+   {
+    "region": "statusbar_nav_banner",
+    "text": "5G •••86%"
+   },
+   {
+    "region": "statusbar_nav_banner",
+    "text": "21:47"
+   },
+   {
+    "region": "statusbar_nav_banner",
+    "text": "微信"
+   },
+   {
+    "region": "banner_overlay",
+    "text": "王姐：合同改好了吗"
+   },
+   {
+    "region": "inputbar",
+    "text": "输入消息.."
+   }
+  ]
+ }
+}

@@ -116,6 +116,23 @@ def approx_contains(sub, text, thresh=0.8):
     grams = bigrams(a)
     return sum(1 for g in grams if g in b) / len(grams) >= thresh
 
+
+def labelish(ln, nxt, W=None, med_h=None):
+    """Would this line be read as a group-chat sender label for the line below it?
+
+    Used BEFORE the banner filter: a banner's text starts ~0.137*W and a sender label ~0.146*W, so
+    the two are 1% apart in x and only the label's structure separates them. At an 18px body the
+    label box drifted to x=171 against a 175.5 cutoff and was deleted as a banner, taking two of
+    three sender names with it.
+    """
+    if nxt is None:
+        return False
+    gap = nxt["y"] - (ln["y"] + ln["h"])
+    return (ln["h"] < 0.85 * nxt["h"] and abs(ln["x"] - nxt["x"]) < 0.07 * (W or 0)
+            and gap > -0.35 * (med_h or 0) and gap < 1.45 * (med_h or 0)
+            and (ln["x"] + ln["w"] / 2) < (W or 0) / 2 and ln["w"] < 0.4 * (W or 0)
+            and len(norm(ln["text"])) <= 8)
+
 def segment(doc):
     W, H = doc["width"], doc["height"]
     lines = sorted(doc["lines"], key=lambda l: l["y"])
@@ -126,6 +143,12 @@ def segment(doc):
     body_adv = body_advance(lines)
     sec = secondary_threshold(body_adv, W)
 
+    index_of = {id(l): i for i, l in enumerate(lines)}
+
+    def nxt_of(ln):
+        i = index_of.get(id(ln))
+        return lines[i + 1] if i is not None and i + 1 < len(lines) else None
+
     for ln in lines:
         cx, cy = ln["x"] + ln["w"] / 2, ln["y"] + ln["h"] / 2
         t, tn = ln["text"], norm(ln["text"])
@@ -135,7 +158,7 @@ def segment(doc):
         # the message rail: bubbles never start left of ~0.16*W, banner text starts at ~0.13*W.
         # Needed because Vision reads banners that other recognisers miss, and a banner can sit
         # lower than the 88pt nav band (measured: text centre at 0.2266*W, 1px past the cutoff).
-        if cy < 0.30 * H and ln["x"] < 0.15 * W:
+        if cy < 0.30 * H and ln["x"] < 0.15 * W and not labelish(ln, nxt_of(ln), W, med_h):
             dropped.append(("banner_overlay", t)); continue
         if cy > H - 0.235 * W:                   # input bar (+ home indicator safe area)
             dropped.append(("inputbar", t)); continue
@@ -197,17 +220,21 @@ def segment(doc):
         # horizontally co-extensive with what is already open. Both conditions are needed: a genuine
         # wide bubble on the other side is near the centre too, but overlaps the open one by only
         # ~0.55 of its width, while a continuation line overlaps by ~1.0.
-        if (cur and cur["side"] == "me" and abs(cx - W / 2) < 0.09 * W
-                        and (ln["y"] - (cur["y0"] + cur["h0"])) < 0.95 * med_h):
-                ov = min(cur["x1"], ln["x"] + ln["w"]) - max(cur["x0"], ln["x"])
-                if ov > 0.75 * min(cur["w"], ln["w"]):
+        if cur and cur["side"] == "me" and (ln["y"] - (cur["y0"] + cur["h0"])) < 0.95 * med_h:
+                if (abs(ln["x"] - cur["x0"]) < 0.03 * W
+                        or abs((ln["x"] + ln["w"]) - cur["x1"]) < 0.03 * W):
                     side = cur["side"]
         if cur and cur["side"] == side:
             gap = ln["y"] - (cur["y0"] + cur["h0"])
             xov = min(cur["x1"], ln["x"] + ln["w"]) - max(cur["x0"], ln["x"])
             # a continuation line that starts well LEFT of the block's current left edge is the
             # inner footer of a card (icon pushes its title right) — accept a larger gap for it
-            indented = (cur["x0"] - ln["x"]) > 0.04 * W
+            # The card-footer branch is about a bubble's inner layout, so it only applies to a
+            # line that is on the message rail at all. Guard the lower bound: at an 18px body
+            # Vision merged one message's box with the avatar column (x=0, a two-line-tall box),
+            # and without the guard that line looked like a card footer and swallowed the bubble
+            # above it. A real card footer starts at ~0.185*W.
+            indented = ((cur["x0"] - ln["x"]) > 0.04 * W and ln["x"] > 0.15 * W)
             if (gap < split or (indented and gap < 2.2 * med_h)) and xov > -0.5 * min(cur["w"], ln["w"]):
                 cur["lines"].append(ln); cur["y0"] = ln["y"]; cur["h0"] = ln["h"]
                 cur["x0"] = min(cur["x0"], ln["x"]); cur["x1"] = max(cur["x1"], ln["x"] + ln["w"])
